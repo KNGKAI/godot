@@ -1,0 +1,23 @@
+config_version=5
+
+[application]
+
+config/name="Sandbox Gate 6"
+run/main_scene="res://traversal.tscn"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/vsync/vsync_mode=0
+
+[physics]
+
+common/physics_interpolation=true
+common/physics_jitter_fix=0.0
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+rendering_device/driver.windows="vulkan"
+environment/defaults/default_clear_color=Color(1, 0, 1, 1)

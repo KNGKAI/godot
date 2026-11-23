@@ -1,0 +1,103 @@
+{
+  "engine_sha256": "0a0c54b0710e020df10ca05ea948c36dead3240f029c39c0a00bb07b6b6533fa",
+  "shared_sha256": {
+    "actor.tscn": "b7ace3d7722aaaf7af29a4f987b578dbe1bcdb8aed691c6484a502daa0a0cb60",
+    "arrival.tres": "705143aa7625ffa533513eef1daee5feedf568b427887fe2586b222684d2d1f4",
+    "mission.tres": "deedd68520a2d2e3db7728d9e914b3a7c57c6354e09f387ef27f5230e2e7d953",
+    "probe.gd": "3fec330fd9a50db77756e527994e1b93b7623070a80c04629a04e48bbb536045",
+    "terminal.tscn": "8ae77d5306eda69ade68ed68af4aa14dceba95c096fffe427709081b5e3c73ff"
+  },
+  "hosts": [
+    {
+      "actions": [],
+      "animation_finished": [],
+      "camera_projection": "perspective",
+      "command": "mission.start arrival",
+      "completed_objectives": [],
+      "events": [
+        "arrival.debrief"
+      ],
+      "failures": [
+        "Camera ray and terminal focus",
+        "Terminal typing",
+        "Terminal command audit",
+        "Terminal release",
+        "World state interpolation",
+        "Host camera response",
+        "AnimationPlayer finish count",
+        "Actor-command count",
+        "Animation cue and mission completion hook",
+        "Lifecycle sequence wait release",
+        "Mission objective transition",
+        "Read completed mission via terminal"
+      ],
+      "focus_value": 75.0,
+      "host": "first_person",
+      "interpolated": false,
+      "repeat_complete_ok": true,
+      "rig": "CharacterBody3D",
+      "signal_end": 0.0,
+      "terminal_locks": [],
+      "terminal_status_ok": true,
+      "unknown_mission_error": 33,
+      "wait_released": false,
+      "export": {
+        "exe_sha256": "d563551b597072688380b8e5e630b88630a47240f779e8d4cb3d211f10ac0549",
+        "pck_sha256": "d797782f82a55b35dae5c9da1e22c44ce92f1bebf0cd700e2abeef3948ef6e09",
+        "pck_bytes": 214844
+      },
+      "engine_diagnostics": [],
+      "exit_code": 1,
+      "engine_warnings": [
+        "WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.",
+        "WARNING: Falling back to dummy PhysicsServer3D; 3D physics functionality will be disabled. If this is intended, set the physics/3d/physics_engine project setting to Dummy."
+      ]
+    },
+    {
+      "actions": [],
+      "animation_finished": [],
+      "camera_projection": "orthogonal",
+      "command": "mission.start arrival",
+      "completed_objectives": [],
+      "events": [
+        "arrival.debrief"
+      ],
+      "failures": [
+        "Camera ray and terminal focus",
+        "Terminal typing",
+        "Terminal command audit",
+        "Terminal release",
+        "World state interpolation",
+        "Host camera response",
+        "AnimationPlayer finish count",
+        "Actor-command count",
+        "Animation cue and mission completion hook",
+        "Lifecycle sequence wait release",
+        "Mission objective transition",
+        "Read completed mission via terminal"
+      ],
+      "focus_value": 8.0,
+      "host": "rts",
+      "interpolated": false,
+      "repeat_complete_ok": true,
+      "rig": "Camera3D",
+      "signal_end": 0.0,
+      "terminal_locks": [],
+      "terminal_status_ok": true,
+      "unknown_mission_error": 33,
+      "wait_released": false,
+      "export": {
+        "exe_sha256": "d563551b597072688380b8e5e630b88630a47240f779e8d4cb3d211f10ac0549",
+        "pck_sha256": "c677bdf422c057b1f6e60acad8d7b0a39e713182c4077ac2d2c889eeb454c33f",
+        "pck_bytes": 214796
+      },
+      "engine_diagnostics": [],
+      "exit_code": 1,
+      "engine_warnings": [
+        "WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.",
+        "WARNING: Falling back to dummy PhysicsServer3D; 3D physics functionality will be disabled. If this is intended, set the physics/3d/physics_engine project setting to Dummy."
+      ]
+    }
+  ],
+  "release_template_sha256": "d563551b597072688380b8e5e630b88630a47240f779e8d4cb3d211f10ac0549"
+}

@@ -303,6 +303,28 @@ protected:
 		}
 	};
 
+	struct TrackCacheEventBus : public TrackCache {
+		TrackCacheEventBus() {
+			type = Animation::TYPE_EVENT_BUS;
+		}
+	};
+
+	struct TrackCacheWorldState : public TrackCache {
+		StringName state_key;
+
+		TrackCacheWorldState() {
+			type = Animation::TYPE_WORLD_STATE;
+		}
+	};
+
+	struct TrackCacheActorCommand : public TrackCache {
+		StringName default_actor_id;
+
+		TrackCacheActorCommand() {
+			type = Animation::TYPE_ACTOR_COMMAND;
+		}
+	};
+
 	RootMotionCache root_motion_cache;
 	AHashMap<Animation::TrackCacheID, TrackCache *, HashHasher> track_cache;
 	AHashMap<Ref<Animation>, LocalVector<TrackCache *>> animation_track_num_to_track_cache;

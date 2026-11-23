@@ -1,0 +1,48 @@
+[gd_resource type="MissionData" format=3]
+
+[sub_resource type="ActionPlayAnimation" id="Play"]
+step_uuid = &"play"
+target_actor_id = &"observer"
+animation_player_path = NodePath("Player")
+animation_name = &"arrival"
+next_steps = PackedStringArray("wait_for_cue")
+
+[sub_resource type="ActionWaitEvent" id="Wait"]
+step_uuid = &"wait_for_cue"
+expected_event_id = &"arrival.beacon"
+next_steps = PackedStringArray("acknowledge")
+
+[sub_resource type="ActionSetState" id="Acknowledge"]
+step_uuid = &"acknowledge"
+key = &"arrival.received"
+value = true
+
+[sub_resource type="SequenceData" id="Intro"]
+sequence_id = &"arrival.intro"
+entry_step_uuid = &"play"
+steps = [SubResource("Play"), SubResource("Wait"), SubResource("Acknowledge")]
+
+[sub_resource type="CondEventFired" id="Cue"]
+expected_event_id = &"arrival.beacon"
+payload_match = {"sector": 7}
+
+[sub_resource type="ObjectiveData" id="Objective"]
+objective_id = &"locate_beacon"
+complete_condition = SubResource("Cue")
+
+[sub_resource type="ActionEmitEvent" id="Debrief"]
+step_uuid = &"debrief"
+event_id = &"arrival.debrief"
+payload = {"sector": 7}
+
+[sub_resource type="SequenceData" id="Outro"]
+sequence_id = &"arrival.outro"
+entry_step_uuid = &"debrief"
+steps = [SubResource("Debrief")]
+
+[resource]
+mission_id = &"arrival"
+entry_objective_id = &"locate_beacon"
+objectives = [SubResource("Objective")]
+on_start_sequence = SubResource("Intro")
+on_complete_sequence = SubResource("Outro")

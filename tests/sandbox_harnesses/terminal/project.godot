@@ -1,0 +1,23 @@
+config_version=5
+
+[application]
+
+config/name="Sandbox Gate 4"
+run/main_scene="res://room.tscn"
+
+[debug]
+
+settings/stdout/print_gpu_profile=true
+settings/profiler/max_timestamp_query_elements=2048
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+window/vsync/vsync_mode=0
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+rendering_device/driver.windows="vulkan"
+occlusion_culling/use_occlusion_culling=true

@@ -1,0 +1,110 @@
+{
+  "phase": 7,
+  "platform": "Windows x86_64",
+  "build": "MSVC target=editor tests=yes accesskit=no d3d12=no",
+  "editor_sha256": "326b75143f94d5d53d78634c4b91e6b2debcbd9ee1035a00bc259c9174ef7628",
+  "editor_tests": {
+    "passed": 10,
+    "failed": 0,
+    "skipped": 1487,
+    "assertions": 156
+  },
+  "full_suite": {
+    "passed": 1494,
+    "failed": 0,
+    "skipped": 3,
+    "assertions": 547548
+  },
+  "authoring_checks_passed": 55,
+  "picker": {
+    "checks": {
+      "Inspector actor camera": true,
+      "Inspector actor editor viewport container": true,
+      "Inspector actor eyedropper": true,
+      "Inspector actor in viewport": true,
+      "Inspector actor native property": true,
+      "Inspector actor value changed": true,
+      "Inspector marker camera": true,
+      "Inspector marker editor viewport container": true,
+      "Inspector marker eyedropper": true,
+      "Inspector marker in viewport": true,
+      "Inspector marker native property": true,
+      "Inspector marker value changed": true,
+      "Timeline actor camera": true,
+      "Timeline actor editor viewport container": true,
+      "Timeline actor eyedropper": true,
+      "Timeline actor in viewport": true,
+      "Timeline actor native property": true,
+      "Timeline actor value changed": true,
+      "Timeline marker camera": true,
+      "Timeline marker editor viewport container": true,
+      "Timeline marker eyedropper": true,
+      "Timeline marker in viewport": true,
+      "Timeline marker native property": true,
+      "Timeline marker value changed": true,
+      "custom track row": true,
+      "fixture scene": true,
+      "frame marker selects target": true,
+      "fuzzy namespace results": true,
+      "host state picker": true,
+      "missing ID badge": true,
+      "native timeline key Inspector": true,
+      "timeline action and sibling payload preserved": true,
+      "type mismatch badge": true,
+      "typed state selection": true
+    },
+    "viewport_clicks": {
+      "Inspector actor": {
+        "height": 70,
+        "width": 289,
+        "x": 156.753341674805,
+        "y": 38.2092933654785
+      },
+      "Inspector marker": {
+        "height": 70,
+        "width": 289,
+        "x": 134.579040527344,
+        "y": 32.4015846252441
+      },
+      "Timeline actor": {
+        "height": 39,
+        "width": 602,
+        "x": 307.826873779297,
+        "y": 21.2880344390869
+      },
+      "Timeline marker": {
+        "height": 39,
+        "width": 602,
+        "x": 295.472595214844,
+        "y": 18.0523109436035
+      }
+    }
+  },
+  "bridge": {
+    "checks": {
+      "all three hydration counts displayed": true,
+      "asset index includes all five resource types": true,
+      "console reaches a separate game process": true,
+      "five editor tabs": true,
+      "game debugger highlights awaiting graph node": true,
+      "game session enables command input": true,
+      "inspection opens the live sequence": true,
+      "live inspector visible during sampling": true,
+      "live telemetry reports matching game PID": true,
+      "one native Sandbox dock": true,
+      "registered simulation module reports tick time": true,
+      "remote autocomplete returns state.get": true,
+      "resident cell heatmap populated": true,
+      "runtime command returns PID": true,
+      "streaming and simulation telemetry received": true
+    },
+    "errors": []
+  },
+  "release_export": {
+    "release_template_sha256": "af1032351d89d59c5390306680f537a0be4d13adf1d55afed5199ffb78ddbcc2",
+    "stripped_mission_and_sequence": true,
+    "source_layout_preserved": true,
+    "broken_reference_rejected": "fixture.unregistered",
+    "existing_package_preserved": true
+  }
+}

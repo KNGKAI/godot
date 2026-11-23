@@ -1,0 +1,8 @@
+{
+  "editor_sha256": "0a0c54b0710e020df10ca05ea948c36dead3240f029c39c0a00bb07b6b6533fa",
+  "release_template_sha256": "d563551b597072688380b8e5e630b88630a47240f779e8d4cb3d211f10ac0549",
+  "stripped_mission_and_sequence": true,
+  "source_layout_preserved": true,
+  "broken_reference_rejected": "fixture.unregistered",
+  "existing_package_preserved": true
+}

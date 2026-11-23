@@ -816,7 +816,10 @@ EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_pla
 			}
 			export_plugins.write[i]->_export_begin_script(features_psa, p_debug, p_path, p_flags);
 		} else {
-			export_plugins.write[i]->_export_begin(features, p_debug, p_path, p_flags);
+			const Error plugin_error = export_plugins.write[i]->_export_begin(features, p_debug, p_path, p_flags);
+			if (error == OK) {
+				error = plugin_error;
+			}
 		}
 	}
 }
@@ -831,6 +834,9 @@ EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 			export_plugins.write[i]->_export_end_script();
 		} else {
 			export_plugins.write[i]->_export_end();
+		}
+		if (error != OK) {
+			export_plugins.write[i]->_clear();
 		}
 		export_plugins.write[i]->_export_end_clear();
 		export_plugins.write[i]->set_export_preset(Ref<EditorExportPreset>());
@@ -2434,16 +2440,19 @@ Error EditorExportPlatform::save_zip_patch(const Ref<EditorExportPreset> &p_pres
 
 Error EditorExportPlatform::export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	RETURN_IF_ERROR(notifier.error);
 	return save_pack(p_preset, p_debug, p_path);
 }
 
 Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	RETURN_IF_ERROR(notifier.error);
 	return save_zip(p_preset, p_debug, p_path);
 }
 
 Error EditorExportPlatform::export_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	RETURN_IF_ERROR(notifier.error);
 	RETURN_IF_ERROR(_load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches));
 	Error err = save_pack_patch(p_preset, p_debug, p_path);
 	_unload_patches();
@@ -2452,6 +2461,7 @@ Error EditorExportPlatform::export_pack_patch(const Ref<EditorExportPreset> &p_p
 
 Error EditorExportPlatform::export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	RETURN_IF_ERROR(notifier.error);
 	RETURN_IF_ERROR(_load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches));
 	Error err = save_zip_patch(p_preset, p_debug, p_path);
 	_unload_patches();

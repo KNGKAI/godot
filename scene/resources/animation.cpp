@@ -105,6 +105,12 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				add_track(TYPE_AUDIO);
 			} else if (type == "animation") {
 				add_track(TYPE_ANIMATION);
+			} else if (type == "event_bus") {
+				add_track(TYPE_EVENT_BUS);
+			} else if (type == "world_state") {
+				add_track(TYPE_WORLD_STATE);
+			} else if (type == "actor_command") {
+				add_track(TYPE_ACTOR_COMMAND);
 			} else {
 				return false;
 			}
@@ -443,6 +449,25 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				}
 
 				return true;
+			} else if (track_get_type(track) == TYPE_EVENT_BUS || track_get_type(track) == TYPE_WORLD_STATE || track_get_type(track) == TYPE_ACTOR_COMMAND) {
+				while (track_get_key_count(track)) {
+					track_remove_key(track, 0);
+				}
+				Dictionary d = p_value;
+				ERR_FAIL_COND_V(!d.has("times"), false);
+				ERR_FAIL_COND_V(!d.has("values"), false);
+				Vector<real_t> times = d["times"];
+				Array values = d["values"];
+				ERR_FAIL_COND_V(times.size() != values.size(), false);
+				Vector<real_t> transitions;
+				if (d.has("transitions")) {
+					transitions = d["transitions"];
+				}
+				for (int i = 0; i < times.size(); i++) {
+					real_t tr = (i < transitions.size()) ? transitions[i] : 1.0;
+					track_insert_key(track, times[i], values[i], tr);
+				}
+				return true;
 			} else {
 				return false;
 			}
@@ -539,6 +564,15 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 					break;
 				case TYPE_ANIMATION:
 					r_ret = "animation";
+					break;
+				case TYPE_EVENT_BUS:
+					r_ret = "event_bus";
+					break;
+				case TYPE_WORLD_STATE:
+					r_ret = "world_state";
+					break;
+				case TYPE_ACTOR_COMMAND:
+					r_ret = "actor_command";
 					break;
 			}
 
@@ -855,6 +889,25 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 				r_ret = d;
 
 				return true;
+			} else if (track_get_type(track) == TYPE_EVENT_BUS || track_get_type(track) == TYPE_WORLD_STATE || track_get_type(track) == TYPE_ACTOR_COMMAND) {
+				Dictionary d;
+				int kk = track_get_key_count(track);
+				Vector<real_t> key_times;
+				Vector<real_t> key_transitions;
+				Array key_values;
+				key_times.resize(kk);
+				key_transitions.resize(kk);
+				key_values.resize(kk);
+				for (int i = 0; i < kk; i++) {
+					key_times.write[i] = track_get_key_time(track, i);
+					key_transitions.write[i] = track_get_key_transition(track, i);
+					key_values[i] = track_get_key_value(track, i);
+				}
+				d["times"] = key_times;
+				d["transitions"] = key_transitions;
+				d["values"] = key_values;
+				r_ret = d;
+				return true;
 			}
 		} else {
 			return false;
@@ -935,6 +988,15 @@ int Animation::add_track(TrackType p_type, int p_at_pos) {
 			tracks.insert(p_at_pos, memnew(AnimationTrack));
 
 		} break;
+		case TYPE_EVENT_BUS: {
+			tracks.insert(p_at_pos, memnew(EventBusTrack));
+		} break;
+		case TYPE_WORLD_STATE: {
+			tracks.insert(p_at_pos, memnew(WorldStateTrack));
+		} break;
+		case TYPE_ACTOR_COMMAND: {
+			tracks.insert(p_at_pos, memnew(ActorCommandTrack));
+		} break;
 		default: {
 			ERR_PRINT("Unknown track type");
 		}
@@ -996,6 +1058,18 @@ void Animation::remove_track(int p_track) {
 			AnimationTrack *an = static_cast<AnimationTrack *>(t);
 			an->values.clear();
 
+		} break;
+		case TYPE_EVENT_BUS: {
+			EventBusTrack *et = static_cast<EventBusTrack *>(t);
+			et->values.clear();
+		} break;
+		case TYPE_WORLD_STATE: {
+			WorldStateTrack *wt = static_cast<WorldStateTrack *>(t);
+			wt->values.clear();
+		} break;
+		case TYPE_ACTOR_COMMAND: {
+			ActorCommandTrack *ct = static_cast<ActorCommandTrack *>(t);
+			ct->values.clear();
 		} break;
 	}
 
@@ -1533,6 +1607,21 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 			an->values.remove_at(p_idx);
 
 		} break;
+		case TYPE_EVENT_BUS: {
+			EventBusTrack *et = static_cast<EventBusTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_idx, et->values.size());
+			et->values.remove_at(p_idx);
+		} break;
+		case TYPE_WORLD_STATE: {
+			WorldStateTrack *wt = static_cast<WorldStateTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_idx, wt->values.size());
+			wt->values.remove_at(p_idx);
+		} break;
+		case TYPE_ACTOR_COMMAND: {
+			ActorCommandTrack *ct = static_cast<ActorCommandTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_idx, ct->values.size());
+			ct->values.remove_at(p_idx);
+		} break;
 	}
 
 	emit_changed();
@@ -1711,6 +1800,39 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 			return k;
 
 		} break;
+		case TYPE_EVENT_BUS: {
+			EventBusTrack *et = static_cast<EventBusTrack *>(t);
+			int k = _find(et->values, p_time, p_backward, p_limit);
+			if ((uint32_t)k >= et->values.size()) {
+				return -1;
+			}
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(et->values[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && et->values[k].time != p_time)) {
+				return -1;
+			}
+			return k;
+		} break;
+		case TYPE_WORLD_STATE: {
+			WorldStateTrack *wt = static_cast<WorldStateTrack *>(t);
+			int k = _find(wt->values, p_time, p_backward, p_limit);
+			if ((uint32_t)k >= wt->values.size()) {
+				return -1;
+			}
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(wt->values[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && wt->values[k].time != p_time)) {
+				return -1;
+			}
+			return k;
+		} break;
+		case TYPE_ACTOR_COMMAND: {
+			ActorCommandTrack *ct = static_cast<ActorCommandTrack *>(t);
+			int k = _find(ct->values, p_time, p_backward, p_limit);
+			if ((uint32_t)k >= ct->values.size()) {
+				return -1;
+			}
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(ct->values[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && ct->values[k].time != p_time)) {
+				return -1;
+			}
+			return k;
+		} break;
 	}
 
 	return -1;
@@ -1826,6 +1948,30 @@ int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key
 			ret = _insert(p_time, at->values, ak);
 
 		} break;
+		case TYPE_EVENT_BUS: {
+			EventBusTrack *et = static_cast<EventBusTrack *>(t);
+			TKey<Variant> k;
+			k.time = p_time;
+			k.transition = p_transition;
+			k.value = p_key;
+			ret = _insert(p_time, et->values, k);
+		} break;
+		case TYPE_WORLD_STATE: {
+			WorldStateTrack *wt = static_cast<WorldStateTrack *>(t);
+			TKey<Variant> k;
+			k.time = p_time;
+			k.transition = p_transition;
+			k.value = p_key;
+			ret = _insert(p_time, wt->values, k);
+		} break;
+		case TYPE_ACTOR_COMMAND: {
+			ActorCommandTrack *ct = static_cast<ActorCommandTrack *>(t);
+			TKey<Variant> k;
+			k.time = p_time;
+			k.transition = p_transition;
+			k.value = p_key;
+			ret = _insert(p_time, ct->values, k);
+		} break;
 	}
 
 	emit_changed();
@@ -1886,6 +2032,18 @@ int Animation::track_get_key_count(int p_track) const {
 		case TYPE_ANIMATION: {
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
 			return at->values.size();
+		} break;
+		case TYPE_EVENT_BUS: {
+			EventBusTrack *et = static_cast<EventBusTrack *>(t);
+			return et->values.size();
+		} break;
+		case TYPE_WORLD_STATE: {
+			WorldStateTrack *wt = static_cast<WorldStateTrack *>(t);
+			return wt->values.size();
+		} break;
+		case TYPE_ACTOR_COMMAND: {
+			ActorCommandTrack *ct = static_cast<ActorCommandTrack *>(t);
+			return ct->values.size();
 		} break;
 	}
 
@@ -1963,6 +2121,21 @@ Variant Animation::track_get_key_value(int p_track, int p_key_idx) const {
 
 			return at->values[p_key_idx].value;
 
+		} break;
+		case TYPE_EVENT_BUS: {
+			EventBusTrack *et = static_cast<EventBusTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key_idx, et->values.size(), Variant());
+			return et->values[p_key_idx].value;
+		} break;
+		case TYPE_WORLD_STATE: {
+			WorldStateTrack *wt = static_cast<WorldStateTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key_idx, wt->values.size(), Variant());
+			return wt->values[p_key_idx].value;
+		} break;
+		case TYPE_ACTOR_COMMAND: {
+			ActorCommandTrack *ct = static_cast<ActorCommandTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key_idx, ct->values.size(), Variant());
+			return ct->values[p_key_idx].value;
 		} break;
 	}
 
@@ -2051,6 +2224,21 @@ double Animation::track_get_key_time(int p_track, int p_key_idx) const {
 			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key_idx, at->values.size(), -1);
 			return at->values[p_key_idx].time;
 
+		} break;
+		case TYPE_EVENT_BUS: {
+			EventBusTrack *et = static_cast<EventBusTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key_idx, et->values.size(), -1);
+			return et->values[p_key_idx].time;
+		} break;
+		case TYPE_WORLD_STATE: {
+			WorldStateTrack *wt = static_cast<WorldStateTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key_idx, wt->values.size(), -1);
+			return wt->values[p_key_idx].time;
+		} break;
+		case TYPE_ACTOR_COMMAND: {
+			ActorCommandTrack *ct = static_cast<ActorCommandTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key_idx, ct->values.size(), -1);
+			return ct->values[p_key_idx].time;
 		} break;
 	}
 
@@ -2147,6 +2335,33 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			_insert(p_time, at->values, key);
 			return;
 		}
+		case TYPE_EVENT_BUS: {
+			EventBusTrack *et = static_cast<EventBusTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key_idx, et->values.size());
+			TKey<Variant> key = et->values[p_key_idx];
+			key.time = p_time;
+			et->values.remove_at(p_key_idx);
+			_insert(p_time, et->values, key);
+			return;
+		}
+		case TYPE_WORLD_STATE: {
+			WorldStateTrack *wt = static_cast<WorldStateTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key_idx, wt->values.size());
+			TKey<Variant> key = wt->values[p_key_idx];
+			key.time = p_time;
+			wt->values.remove_at(p_key_idx);
+			_insert(p_time, wt->values, key);
+			return;
+		}
+		case TYPE_ACTOR_COMMAND: {
+			ActorCommandTrack *ct = static_cast<ActorCommandTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key_idx, ct->values.size());
+			TKey<Variant> key = ct->values[p_key_idx];
+			key.time = p_time;
+			ct->values.remove_at(p_key_idx);
+			_insert(p_time, ct->values, key);
+			return;
+		}
 	}
 
 	ERR_FAIL();
@@ -2201,13 +2416,20 @@ real_t Animation::track_get_key_transition(int p_track, int p_key_idx) const {
 			return mt->methods[p_key_idx].transition;
 
 		} break;
+		case TYPE_WORLD_STATE: {
+			WorldStateTrack *wt = static_cast<WorldStateTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key_idx, wt->values.size(), -1);
+			return wt->values[p_key_idx].transition;
+		} break;
 		case TYPE_BEZIER: {
 			return 1; //bezier does not really use transitions
 		} break;
 		case TYPE_AUDIO: {
 			return 1; //audio does not really use transitions
 		} break;
-		case TYPE_ANIMATION: {
+		case TYPE_ANIMATION:
+		case TYPE_EVENT_BUS:
+		case TYPE_ACTOR_COMMAND: {
 			return 1; //animation does not really use transitions
 		} break;
 	}
@@ -2339,6 +2561,21 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			at->values[p_key_idx].value = p_value;
 
 		} break;
+		case TYPE_EVENT_BUS: {
+			EventBusTrack *et = static_cast<EventBusTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key_idx, et->values.size());
+			et->values[p_key_idx].value = p_value;
+		} break;
+		case TYPE_WORLD_STATE: {
+			WorldStateTrack *wt = static_cast<WorldStateTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key_idx, wt->values.size());
+			wt->values[p_key_idx].value = p_value;
+		} break;
+		case TYPE_ACTOR_COMMAND: {
+			ActorCommandTrack *ct = static_cast<ActorCommandTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key_idx, ct->values.size());
+			ct->values[p_key_idx].value = p_value;
+		} break;
 	}
 
 	emit_changed();
@@ -2385,9 +2622,16 @@ void Animation::track_set_key_transition(int p_track, int p_key_idx, real_t p_tr
 			mt->methods[p_key_idx].transition = p_transition;
 
 		} break;
+		case TYPE_WORLD_STATE: {
+			WorldStateTrack *wt = static_cast<WorldStateTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key_idx, wt->values.size());
+			wt->values[p_key_idx].transition = p_transition;
+		} break;
 		case TYPE_BEZIER:
 		case TYPE_AUDIO:
-		case TYPE_ANIMATION: {
+		case TYPE_ANIMATION:
+		case TYPE_EVENT_BUS:
+		case TYPE_ACTOR_COMMAND: {
 			// they don't use transition
 		} break;
 	}
@@ -3114,6 +3358,36 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 							_track_get_key_indices_in_range(an->values, from_time, anim_end, r_indices, is_backward);
 						}
 					} break;
+					case TYPE_EVENT_BUS: {
+						const EventBusTrack *et = static_cast<const EventBusTrack *>(t);
+						if (!is_backward) {
+							_track_get_key_indices_in_range(et->values, from_time, anim_end, r_indices, is_backward);
+							_track_get_key_indices_in_range(et->values, anim_start, to_time, r_indices, is_backward);
+						} else {
+							_track_get_key_indices_in_range(et->values, anim_start, to_time, r_indices, is_backward);
+							_track_get_key_indices_in_range(et->values, from_time, anim_end, r_indices, is_backward);
+						}
+					} break;
+					case TYPE_WORLD_STATE: {
+						const WorldStateTrack *wt = static_cast<const WorldStateTrack *>(t);
+						if (!is_backward) {
+							_track_get_key_indices_in_range(wt->values, from_time, anim_end, r_indices, is_backward);
+							_track_get_key_indices_in_range(wt->values, anim_start, to_time, r_indices, is_backward);
+						} else {
+							_track_get_key_indices_in_range(wt->values, anim_start, to_time, r_indices, is_backward);
+							_track_get_key_indices_in_range(wt->values, from_time, anim_end, r_indices, is_backward);
+						}
+					} break;
+					case TYPE_ACTOR_COMMAND: {
+						const ActorCommandTrack *ct = static_cast<const ActorCommandTrack *>(t);
+						if (!is_backward) {
+							_track_get_key_indices_in_range(ct->values, from_time, anim_end, r_indices, is_backward);
+							_track_get_key_indices_in_range(ct->values, anim_start, to_time, r_indices, is_backward);
+						} else {
+							_track_get_key_indices_in_range(ct->values, anim_start, to_time, r_indices, is_backward);
+							_track_get_key_indices_in_range(ct->values, from_time, anim_end, r_indices, is_backward);
+						}
+					} break;
 				}
 				return;
 			}
@@ -3209,6 +3483,21 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 						_track_get_key_indices_in_range(an->values, start, from_time, r_indices, true);
 						_track_get_key_indices_in_range(an->values, start, to_time, r_indices, false);
 					} break;
+					case TYPE_EVENT_BUS: {
+						const EventBusTrack *et = static_cast<const EventBusTrack *>(t);
+						_track_get_key_indices_in_range(et->values, start, from_time, r_indices, true);
+						_track_get_key_indices_in_range(et->values, start, to_time, r_indices, false);
+					} break;
+					case TYPE_WORLD_STATE: {
+						const WorldStateTrack *wt = static_cast<const WorldStateTrack *>(t);
+						_track_get_key_indices_in_range(wt->values, start, from_time, r_indices, true);
+						_track_get_key_indices_in_range(wt->values, start, to_time, r_indices, false);
+					} break;
+					case TYPE_ACTOR_COMMAND: {
+						const ActorCommandTrack *ct = static_cast<const ActorCommandTrack *>(t);
+						_track_get_key_indices_in_range(ct->values, start, from_time, r_indices, true);
+						_track_get_key_indices_in_range(ct->values, start, to_time, r_indices, false);
+					} break;
 				}
 				return;
 			}
@@ -3280,6 +3569,21 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 						_track_get_key_indices_in_range(an->values, from_time, end, r_indices, false);
 						_track_get_key_indices_in_range(an->values, to_time, end, r_indices, true);
 					} break;
+					case TYPE_EVENT_BUS: {
+						const EventBusTrack *et = static_cast<const EventBusTrack *>(t);
+						_track_get_key_indices_in_range(et->values, from_time, end, r_indices, false);
+						_track_get_key_indices_in_range(et->values, to_time, end, r_indices, true);
+					} break;
+					case TYPE_WORLD_STATE: {
+						const WorldStateTrack *wt = static_cast<const WorldStateTrack *>(t);
+						_track_get_key_indices_in_range(wt->values, from_time, end, r_indices, false);
+						_track_get_key_indices_in_range(wt->values, to_time, end, r_indices, true);
+					} break;
+					case TYPE_ACTOR_COMMAND: {
+						const ActorCommandTrack *ct = static_cast<const ActorCommandTrack *>(t);
+						_track_get_key_indices_in_range(ct->values, from_time, end, r_indices, false);
+						_track_get_key_indices_in_range(ct->values, to_time, end, r_indices, true);
+					} break;
 				}
 				return;
 			}
@@ -3344,6 +3648,18 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 		case TYPE_ANIMATION: {
 			const AnimationTrack *an = static_cast<const AnimationTrack *>(t);
 			_track_get_key_indices_in_range(an->values, from_time, to_time, r_indices, is_backward);
+		} break;
+		case TYPE_EVENT_BUS: {
+			const EventBusTrack *et = static_cast<const EventBusTrack *>(t);
+			_track_get_key_indices_in_range(et->values, from_time, to_time, r_indices, is_backward);
+		} break;
+		case TYPE_WORLD_STATE: {
+			const WorldStateTrack *wt = static_cast<const WorldStateTrack *>(t);
+			_track_get_key_indices_in_range(wt->values, from_time, to_time, r_indices, is_backward);
+		} break;
+		case TYPE_ACTOR_COMMAND: {
+			const ActorCommandTrack *ct = static_cast<const ActorCommandTrack *>(t);
+			_track_get_key_indices_in_range(ct->values, from_time, to_time, r_indices, is_backward);
 		} break;
 	}
 }
@@ -4091,6 +4407,69 @@ void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {
 	}
 }
 
+int Animation::event_bus_track_insert_key(int p_track, double p_time, const StringName &p_event_id, const Dictionary &p_payload) {
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), -1);
+	ERR_FAIL_COND_V(tracks[p_track]->type != TYPE_EVENT_BUS, -1);
+	Dictionary d;
+	d["event_id"] = p_event_id;
+	d["payload"] = p_payload;
+	return track_insert_key(p_track, p_time, d);
+}
+
+StringName Animation::event_bus_track_get_key_event_id(int p_track, int p_key_idx) const {
+	Variant val = track_get_key_value(p_track, p_key_idx);
+	if (val.get_type() == Variant::DICTIONARY) {
+		Dictionary d = val;
+		return d.get("event_id", StringName());
+	} else if (val.get_type() == Variant::STRING_NAME || val.get_type() == Variant::STRING) {
+		return StringName(val);
+	}
+	return StringName();
+}
+
+Dictionary Animation::event_bus_track_get_key_payload(int p_track, int p_key_idx) const {
+	Variant val = track_get_key_value(p_track, p_key_idx);
+	if (val.get_type() == Variant::DICTIONARY) {
+		Dictionary d = val;
+		return d.get("payload", Dictionary());
+	}
+	return Dictionary();
+}
+
+int Animation::world_state_track_insert_key(int p_track, double p_time, const Variant &p_value, real_t p_transition) {
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), -1);
+	ERR_FAIL_COND_V(tracks[p_track]->type != TYPE_WORLD_STATE, -1);
+	return track_insert_key(p_track, p_time, p_value, p_transition);
+}
+
+Variant Animation::world_state_track_interpolate(int p_track, double p_time, bool p_backward) const {
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), Variant());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_WORLD_STATE, Variant());
+	WorldStateTrack *wt = static_cast<WorldStateTrack *>(t);
+
+	bool ok = false;
+	Variant res = _interpolate(wt->values, p_time, wt->update_mode == UPDATE_DISCRETE ? INTERPOLATION_NEAREST : wt->interpolation, wt->loop_wrap, &ok, p_backward);
+	if (ok) {
+		return res;
+	}
+	return Variant();
+}
+
+int Animation::actor_command_track_insert_key(int p_track, double p_time, const StringName &p_actor_id, const StringName &p_action_id, const Dictionary &p_payload, bool p_control_lock, bool p_locked) {
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), -1);
+	ERR_FAIL_COND_V(tracks[p_track]->type != TYPE_ACTOR_COMMAND, -1);
+	Dictionary d;
+	d["actor_id"] = p_actor_id;
+	d["action_id"] = p_action_id;
+	d["payload"] = p_payload;
+	if (p_control_lock) {
+		d["control_lock"] = true;
+		d["locked"] = p_locked;
+	}
+	return track_insert_key(p_track, p_time, d);
+}
+
 void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_track", "type", "at_position"), &Animation::add_track, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("remove_track", "track_idx"), &Animation::remove_track);
@@ -4204,6 +4583,13 @@ void Animation::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_capture_included"), &Animation::is_capture_included);
 
+	ClassDB::bind_method(D_METHOD("event_bus_track_insert_key", "track_idx", "time", "event_id", "payload"), &Animation::event_bus_track_insert_key, DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("event_bus_track_get_key_event_id", "track_idx", "key_idx"), &Animation::event_bus_track_get_key_event_id);
+	ClassDB::bind_method(D_METHOD("event_bus_track_get_key_payload", "track_idx", "key_idx"), &Animation::event_bus_track_get_key_payload);
+	ClassDB::bind_method(D_METHOD("world_state_track_insert_key", "track_idx", "time", "value", "transition"), &Animation::world_state_track_insert_key, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("world_state_track_interpolate", "track_idx", "time_sec", "backward"), &Animation::world_state_track_interpolate, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("actor_command_track_insert_key", "track_idx", "time", "actor_id", "action_id", "payload", "control_lock", "locked"), &Animation::actor_command_track_insert_key, DEFVAL(Dictionary()), DEFVAL(false), DEFVAL(true));
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001,suffix:s"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step", PROPERTY_HINT_RANGE, "0,4096,0.001,suffix:s"), "set_step", "get_step");
@@ -4218,6 +4604,9 @@ void Animation::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_BEZIER);
 	BIND_ENUM_CONSTANT(TYPE_AUDIO);
 	BIND_ENUM_CONSTANT(TYPE_ANIMATION);
+	BIND_ENUM_CONSTANT(TYPE_EVENT_BUS);
+	BIND_ENUM_CONSTANT(TYPE_WORLD_STATE);
+	BIND_ENUM_CONSTANT(TYPE_ACTOR_COMMAND);
 
 	// TODO: Reorder the MAKIMA next to the CUBIC in Godot 5, since the enum values are serialized and cannot be changed without breaking compat.
 	BIND_ENUM_CONSTANT(INTERPOLATION_NEAREST);

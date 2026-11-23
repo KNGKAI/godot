@@ -434,6 +434,90 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 				return true;
 			}
 		} break;
+		case Animation::TYPE_EVENT_BUS: {
+			Variant old = animation->track_get_key_value(track, key);
+			Dictionary d_new;
+			if (old.get_type() == Variant::DICTIONARY) {
+				d_new = Dictionary(old).duplicate();
+			} else {
+				d_new["event_id"] = animation->event_bus_track_get_key_event_id(track, key);
+			}
+			if (name == "event_id" || name == "payload") {
+				d_new[name] = p_value;
+				setting = true;
+				undo_redo->create_action(TTR("Animation Change EventBus Key"), UndoRedo::MERGE_ENDS);
+				undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, d_new);
+				undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, old);
+				undo_redo->add_do_method(this, "_update_obj", animation);
+				undo_redo->add_undo_method(this, "_update_obj", animation);
+				undo_redo->commit_action();
+				setting = false;
+				return true;
+			}
+		} break;
+		case Animation::TYPE_WORLD_STATE: {
+			Variant prev = animation->track_get_key_value(track, key);
+			Dictionary fields;
+			if (prev.get_type() == Variant::DICTIONARY) {
+				fields = prev;
+			}
+			const bool per_key_id = fields.has("state_key") && fields.has("value");
+			if (name == "value" || (name == "state_key" && per_key_id)) {
+				Variant new_value = p_value;
+				if (per_key_id) {
+					fields = fields.duplicate();
+					fields[name] = p_value;
+					new_value = fields;
+				}
+				setting = true;
+				undo_redo->create_action(TTR("Animation Change WorldState Key"), UndoRedo::MERGE_ENDS);
+				undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, new_value);
+				undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, prev);
+				undo_redo->add_do_method(this, "_update_obj", animation);
+				undo_redo->add_undo_method(this, "_update_obj", animation);
+				undo_redo->commit_action();
+				setting = false;
+				return true;
+			} else if (name == "state_key") {
+				NodePath prev_path = animation->track_get_path(track);
+				NodePath new_path = NodePath("WorldState:" + String(p_value));
+				setting = true;
+				undo_redo->create_action(TTR("Animation Change WorldState Track Key"), UndoRedo::MERGE_ENDS);
+				undo_redo->add_do_method(animation.ptr(), "track_set_path", track, new_path);
+				undo_redo->add_undo_method(animation.ptr(), "track_set_path", track, prev_path);
+				undo_redo->add_do_method(this, "_update_obj", animation);
+				undo_redo->add_undo_method(this, "_update_obj", animation);
+				undo_redo->commit_action();
+				setting = false;
+				return true;
+			}
+		} break;
+		case Animation::TYPE_ACTOR_COMMAND: {
+			Dictionary d_old = animation->track_get_key_value(track, key);
+			Dictionary d_new = d_old.duplicate();
+			if (name == "actor_id" || name == "action_id" || name == "payload" || name == "control_lock" || name == "locked" || name == "marker_id") {
+				if (name == "marker_id") {
+					Dictionary payload = d_new.get("payload", Dictionary());
+					payload = payload.duplicate();
+					payload["marker_id"] = p_value;
+					d_new["payload"] = payload;
+				} else {
+					d_new[name] = p_value;
+				}
+				setting = true;
+				undo_redo->create_action(TTR("Animation Change ActorCommand Key"), UndoRedo::MERGE_ENDS);
+				undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, d_new);
+				undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, d_old);
+				undo_redo->add_do_method(this, "_update_obj", animation);
+				undo_redo->add_undo_method(this, "_update_obj", animation);
+				undo_redo->commit_action();
+				setting = false;
+				if (name == "payload") {
+					notify_change();
+				}
+				return true;
+			}
+		} break;
 	}
 
 	return false;
@@ -546,6 +630,66 @@ bool AnimationTrackKeyEdit::_get(const StringName &p_name, Variant &r_ret) const
 				return true;
 			}
 
+		} break;
+		case Animation::TYPE_EVENT_BUS: {
+			if (name == "event_id") {
+				StringName id = animation->event_bus_track_get_key_event_id(track, key);
+				NodePath path = animation->track_get_path(track);
+				r_ret = id == StringName() && path.get_subname_count() ? path.get_concatenated_subnames() : id;
+				return true;
+			}
+			if (name == "payload") {
+				r_ret = animation->event_bus_track_get_key_payload(track, key);
+				return true;
+			}
+		} break;
+		case Animation::TYPE_WORLD_STATE: {
+			Variant value = animation->track_get_key_value(track, key);
+			if (value.get_type() == Variant::DICTIONARY) {
+				Dictionary fields = value;
+				if ((name == "state_key" || name == "value") && fields.has("state_key") && fields.has("value")) {
+					r_ret = fields[name];
+					return true;
+				}
+			}
+			if (name == "state_key") {
+				NodePath np = animation->track_get_path(track);
+				r_ret = np.get_subname_count() > 0 ? np.get_concatenated_subnames() : StringName(String(np));
+				return true;
+			}
+			if (name == "value") {
+				r_ret = animation->track_get_key_value(track, key);
+				return true;
+			}
+		} break;
+		case Animation::TYPE_ACTOR_COMMAND: {
+			Dictionary d = animation->track_get_key_value(track, key);
+			if (name == "actor_id") {
+				NodePath path = animation->track_get_path(track);
+				r_ret = d.get("actor_id", path.get_subname_count() ? path.get_concatenated_subnames() : StringName());
+				return true;
+			}
+			if (name == "marker_id") {
+				Dictionary payload = d.get("payload", Dictionary());
+				r_ret = payload.get("marker_id", StringName());
+				return true;
+			}
+			if (name == "action_id") {
+				r_ret = d.get("action_id", StringName());
+				return true;
+			}
+			if (name == "payload") {
+				r_ret = d.get("payload", Dictionary());
+				return true;
+			}
+			if (name == "control_lock") {
+				r_ret = d.get("control_lock", false);
+				return true;
+			}
+			if (name == "locked") {
+				r_ret = d.get("locked", true);
+				return true;
+			}
 		} break;
 	}
 
@@ -668,9 +812,29 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 			p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("animation"), PROPERTY_HINT_ENUM, animations));
 
 		} break;
+		case Animation::TYPE_EVENT_BUS: {
+			p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("event_id"), PROPERTY_HINT_NONE, "sandbox_event_id"));
+			p_list->push_back(PropertyInfo(Variant::DICTIONARY, PNAME("payload")));
+		} break;
+		case Animation::TYPE_WORLD_STATE: {
+			p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("state_key"), PROPERTY_HINT_NONE, "sandbox_world_state_key"));
+			p_list->push_back(PropertyInfo(Variant::NIL, PNAME("value"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+		} break;
+		case Animation::TYPE_ACTOR_COMMAND: {
+			p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("actor_id"), PROPERTY_HINT_NONE, "sandbox_actor_id"));
+			Dictionary command = animation->track_get_key_value(track, key);
+			Dictionary payload = command.get("payload", Dictionary());
+			if (payload.has("marker_id")) {
+				p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("marker_id"), PROPERTY_HINT_NONE, "sandbox_marker_id"));
+			}
+			p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("action_id")));
+			p_list->push_back(PropertyInfo(Variant::DICTIONARY, PNAME("payload")));
+			p_list->push_back(PropertyInfo(Variant::BOOL, PNAME("control_lock")));
+			p_list->push_back(PropertyInfo(Variant::BOOL, PNAME("locked")));
+		} break;
 	}
 
-	if (animation->track_get_type(track) == Animation::TYPE_VALUE) {
+	if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_WORLD_STATE) {
 		p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("easing"), PROPERTY_HINT_EXP_EASING));
 	}
 }
@@ -984,6 +1148,10 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 						update_obj = true;
 					}
 				} break;
+				case Animation::TYPE_EVENT_BUS:
+				case Animation::TYPE_WORLD_STATE:
+				case Animation::TYPE_ACTOR_COMMAND: {
+				} break;
 			}
 		}
 	}
@@ -1119,6 +1287,10 @@ bool AnimationMultiTrackKeyEdit::_get(const StringName &p_name, Variant &r_ret) 
 						return true;
 					}
 
+				} break;
+				case Animation::TYPE_EVENT_BUS:
+				case Animation::TYPE_WORLD_STATE:
+				case Animation::TYPE_ACTOR_COMMAND: {
 				} break;
 			}
 		}
@@ -1268,6 +1440,10 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 				animations += "[stop]";
 
 				p_list->push_back(PropertyInfo(Variant::STRING_NAME, "animation", PROPERTY_HINT_ENUM, animations));
+			} break;
+			case Animation::TYPE_EVENT_BUS:
+			case Animation::TYPE_WORLD_STATE:
+			case Animation::TYPE_ACTOR_COMMAND: {
 			} break;
 		}
 	}
@@ -1472,6 +1648,9 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyBezier")), TTRC("Bezier Curve Track..."));
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAudio")), TTRC("Audio Playback Track..."));
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAnimation")), TTRC("Animation Playback Track..."));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyCall")), TTRC("Sandbox EventBus Track"));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyValue")), TTRC("Sandbox WorldState Track"));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAnimation")), TTRC("Sandbox Actor Command Track"));
 
 			timeline_resize_rect.size = get_editor_theme_icon(SNAME("TimelineHandle"))->get_size();
 		} break;
@@ -2883,7 +3062,7 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 }
 
 Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
-	const Ref<Texture2D> type_icons[9] = {
+	const Ref<Texture2D> type_icons[12] = {
 		get_editor_theme_icon(SNAME("KeyValue")),
 		get_editor_theme_icon(SNAME("KeyTrackPosition")),
 		get_editor_theme_icon(SNAME("KeyTrackRotation")),
@@ -2892,6 +3071,9 @@ Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
 		get_editor_theme_icon(SNAME("KeyCall")),
 		get_editor_theme_icon(SNAME("KeyBezier")),
 		get_editor_theme_icon(SNAME("KeyAudio")),
+		get_editor_theme_icon(SNAME("KeyAnimation")),
+		get_editor_theme_icon(SNAME("KeyCall")),
+		get_editor_theme_icon(SNAME("KeyValue")),
 		get_editor_theme_icon(SNAME("KeyAnimation"))
 	};
 	return type_icons[animation->track_get_type(track)];
@@ -3069,6 +3251,15 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 				case Animation::TYPE_ANIMATION: {
 					String name = animation->animation_track_get_key_animation(track, key_idx);
 					text += TTR("Animation Clip:") + " " + name;
+				} break;
+				case Animation::TYPE_EVENT_BUS: {
+					text += TTR("Event:") + " " + String(animation->event_bus_track_get_key_event_id(track, key_idx));
+				} break;
+				case Animation::TYPE_WORLD_STATE: {
+					text += TTR("WorldState Value:") + " " + String(animation->track_get_key_value(track, key_idx));
+				} break;
+				case Animation::TYPE_ACTOR_COMMAND: {
+					text += TTR("Actor Command");
 				} break;
 			}
 			return text;
@@ -5073,7 +5264,10 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		case Animation::TYPE_BLEND_SHAPE:
 		case Animation::TYPE_VALUE:
 		case Animation::TYPE_AUDIO:
-		case Animation::TYPE_ANIMATION: {
+		case Animation::TYPE_ANIMATION:
+		case Animation::TYPE_EVENT_BUS:
+		case Animation::TYPE_WORLD_STATE:
+		case Animation::TYPE_ACTOR_COMMAND: {
 			value = p_id.value;
 
 		} break;
@@ -5839,6 +6033,23 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 }
 
 void AnimationTrackEditor::_add_track(int p_type) {
+	if (p_type == Animation::TYPE_EVENT_BUS || p_type == Animation::TYPE_WORLD_STATE || p_type == Animation::TYPE_ACTOR_COMMAND) {
+		ERR_FAIL_COND(animation.is_null());
+		NodePath default_path = NodePath("EventBus");
+		if (p_type == Animation::TYPE_WORLD_STATE) {
+			default_path = NodePath("WorldState:key");
+		} else if (p_type == Animation::TYPE_ACTOR_COMMAND) {
+			default_path = NodePath("ActorRegistry");
+		}
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Add Sandbox Track"));
+		undo_redo->add_do_method(animation.ptr(), "add_track", p_type);
+		undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), default_path);
+		undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
+		undo_redo->commit_action();
+		return;
+	}
+
 	AnimationPlayer *ap = AnimationPlayerEditor::get_singleton()->get_player();
 	if (!ap) {
 		ERR_FAIL_EDMSG("No AnimationPlayer is currently being edited.");
@@ -6033,8 +6244,9 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 	resolve_insertion_offset(p_ofs);
 
-	Node *node = root->get_node_or_null(animation->track_get_path(p_track));
-	if (!node) {
+	Animation::TrackType track_type = animation->track_get_type(p_track);
+	Node *node = root ? root->get_node_or_null(animation->track_get_path(p_track)) : nullptr;
+	if (!node && track_type != Animation::TYPE_EVENT_BUS && track_type != Animation::TYPE_WORLD_STATE && track_type != Animation::TYPE_ACTOR_COMMAND) {
 		EditorNode::get_singleton()->show_warning(TTR("Track path is invalid, so can't add a key."));
 		return;
 	}
@@ -6054,7 +6266,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 	id.track_idx = p_track;
 	id.type = animation->track_get_type(p_track);
 	// TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
-	id.query = vformat(TTR("node '%s'"), node->get_name());
+	id.query = node ? vformat(TTR("node '%s'"), node->get_name()) : String(id.path);
 	id.time = p_ofs;
 	// id.value is filled in each case handled below.
 
@@ -6129,6 +6341,24 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 		} break;
 		case Animation::TYPE_ANIMATION: {
 			id.value = StringName("[stop]");
+		} break;
+		case Animation::TYPE_EVENT_BUS: {
+			Dictionary d;
+			d["event_id"] = StringName();
+			d["payload"] = Dictionary();
+			id.value = d;
+		} break;
+		case Animation::TYPE_WORLD_STATE: {
+			id.value = 0.0;
+		} break;
+		case Animation::TYPE_ACTOR_COMMAND: {
+			Dictionary d;
+			d["actor_id"] = StringName();
+			d["action_id"] = StringName();
+			d["payload"] = Dictionary();
+			d["control_lock"] = false;
+			d["locked"] = true;
+			id.value = d;
 		} break;
 		default: {
 			// All track types should be handled by now.

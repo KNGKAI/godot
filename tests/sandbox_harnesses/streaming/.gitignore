@@ -1,0 +1,4 @@
+world/
+results/
+.godot/
+*.uid

@@ -1995,6 +1995,7 @@ bool EditorExportPlatformMacOS::_copy_debugsymbols(Ref<DirAccess> &p_da, const S
 
 Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
+	RETURN_IF_ERROR(notifier.error);
 
 	const String base_dir = p_path.get_base_dir();
 

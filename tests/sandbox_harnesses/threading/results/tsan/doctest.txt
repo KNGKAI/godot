@@ -1,0 +1,266 @@
+[doctest] doctest version is "2.5.3"
+[doctest] run with "--help" for options
+===============================================================================
+./modules/sandbox_sim/tests/test_simulation_server.h:122:
+TEST CASE:  [SandboxSim][Gate2] 10,000 Consecutive Ticks Across 8 Concurrent SimModules on WorkerThreadPool
+
+./modules/sandbox_sim/tests/test_simulation_server.h:126: SUCCESS: REQUIRE( sim != nullptr ) is correct!
+  values: REQUIRE( 1 != nullptr )
+
+./modules/sandbox_sim/tests/test_simulation_server.h:127: SUCCESS: REQUIRE( ws != nullptr ) is correct!
+  values: REQUIRE( 1 != nullptr )
+
+./modules/sandbox_sim/tests/test_simulation_server.h:128: SUCCESS: REQUIRE( eb != nullptr ) is correct!
+  values: REQUIRE( 1 != nullptr )
+
+./modules/sandbox_sim/tests/test_simulation_server.h:139: SUCCESS: REQUIRE( pool != nullptr ) is correct!
+  values: REQUIRE( 1 != nullptr )
+
+./modules/sandbox_sim/tests/test_simulation_server.h:156: SUCCESS: REQUIRE( mod_rids[i].is_valid() ) is correct!
+  values: REQUIRE( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:156: SUCCESS: REQUIRE( mod_rids[i].is_valid() ) is correct!
+  values: REQUIRE( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:156: SUCCESS: REQUIRE( mod_rids[i].is_valid() ) is correct!
+  values: REQUIRE( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:156: SUCCESS: REQUIRE( mod_rids[i].is_valid() ) is correct!
+  values: REQUIRE( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:156: SUCCESS: REQUIRE( mod_rids[i].is_valid() ) is correct!
+  values: REQUIRE( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:156: SUCCESS: REQUIRE( mod_rids[i].is_valid() ) is correct!
+  values: REQUIRE( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:156: SUCCESS: REQUIRE( mod_rids[i].is_valid() ) is correct!
+  values: REQUIRE( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:156: SUCCESS: REQUIRE( mod_rids[i].is_valid() ) is correct!
+  values: REQUIRE( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:167: SUCCESS: CHECK( sim->get_leaked_task_count() == 0 ) is correct!
+  values: CHECK( 0 == 0 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:168: SUCCESS: CHECK( sim->get_total_tasks_dispatched() == NUM_MODULES * TOTAL_TICKS ) is correct!
+  values: CHECK( 80000 == 80000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:169: SUCCESS: CHECK( sim->get_total_tasks_dispatched() == sim->get_total_tasks_awaited() ) is correct!
+  values: CHECK( 80000 == 80000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:171: SUCCESS: CHECK( sim->get_nested_wait_violations() == 0 ) is correct!
+  values: CHECK( 0 == 0 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:174: SUCCESS: CHECK( mods[i]->internal_counter == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:175: SUCCESS: CHECK( mods[i]->worker_ticks == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:176: SUCCESS: CHECK( mods[i]->overlap_observed ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:177: SUCCESS: CHECK( mods[i]->milestones_received == TOTAL_TICKS / 2500 ) is correct!
+  values: CHECK( 4 == 4 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:178: SUCCESS: CHECK( mods[i]->milestones_valid ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:180: SUCCESS: CHECK( Math::is_equal_approx(val, TOTAL_TICKS * step_dt, 0.01) ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:174: SUCCESS: CHECK( mods[i]->internal_counter == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:175: SUCCESS: CHECK( mods[i]->worker_ticks == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:176: SUCCESS: CHECK( mods[i]->overlap_observed ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:177: SUCCESS: CHECK( mods[i]->milestones_received == TOTAL_TICKS / 2500 ) is correct!
+  values: CHECK( 4 == 4 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:178: SUCCESS: CHECK( mods[i]->milestones_valid ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:180: SUCCESS: CHECK( Math::is_equal_approx(val, TOTAL_TICKS * step_dt, 0.01) ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:174: SUCCESS: CHECK( mods[i]->internal_counter == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:175: SUCCESS: CHECK( mods[i]->worker_ticks == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:176: SUCCESS: CHECK( mods[i]->overlap_observed ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:177: SUCCESS: CHECK( mods[i]->milestones_received == TOTAL_TICKS / 2500 ) is correct!
+  values: CHECK( 4 == 4 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:178: SUCCESS: CHECK( mods[i]->milestones_valid ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:180: SUCCESS: CHECK( Math::is_equal_approx(val, TOTAL_TICKS * step_dt, 0.01) ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:174: SUCCESS: CHECK( mods[i]->internal_counter == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:175: SUCCESS: CHECK( mods[i]->worker_ticks == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:176: SUCCESS: CHECK( mods[i]->overlap_observed ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:177: SUCCESS: CHECK( mods[i]->milestones_received == TOTAL_TICKS / 2500 ) is correct!
+  values: CHECK( 4 == 4 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:178: SUCCESS: CHECK( mods[i]->milestones_valid ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:180: SUCCESS: CHECK( Math::is_equal_approx(val, TOTAL_TICKS * step_dt, 0.01) ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:174: SUCCESS: CHECK( mods[i]->internal_counter == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:175: SUCCESS: CHECK( mods[i]->worker_ticks == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:176: SUCCESS: CHECK( mods[i]->overlap_observed ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:177: SUCCESS: CHECK( mods[i]->milestones_received == TOTAL_TICKS / 2500 ) is correct!
+  values: CHECK( 4 == 4 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:178: SUCCESS: CHECK( mods[i]->milestones_valid ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:180: SUCCESS: CHECK( Math::is_equal_approx(val, TOTAL_TICKS * step_dt, 0.01) ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:174: SUCCESS: CHECK( mods[i]->internal_counter == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:175: SUCCESS: CHECK( mods[i]->worker_ticks == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:176: SUCCESS: CHECK( mods[i]->overlap_observed ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:177: SUCCESS: CHECK( mods[i]->milestones_received == TOTAL_TICKS / 2500 ) is correct!
+  values: CHECK( 4 == 4 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:178: SUCCESS: CHECK( mods[i]->milestones_valid ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:180: SUCCESS: CHECK( Math::is_equal_approx(val, TOTAL_TICKS * step_dt, 0.01) ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:174: SUCCESS: CHECK( mods[i]->internal_counter == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:175: SUCCESS: CHECK( mods[i]->worker_ticks == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:176: SUCCESS: CHECK( mods[i]->overlap_observed ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:177: SUCCESS: CHECK( mods[i]->milestones_received == TOTAL_TICKS / 2500 ) is correct!
+  values: CHECK( 4 == 4 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:178: SUCCESS: CHECK( mods[i]->milestones_valid ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:180: SUCCESS: CHECK( Math::is_equal_approx(val, TOTAL_TICKS * step_dt, 0.01) ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:174: SUCCESS: CHECK( mods[i]->internal_counter == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:175: SUCCESS: CHECK( mods[i]->worker_ticks == TOTAL_TICKS ) is correct!
+  values: CHECK( 10000 == 10000 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:176: SUCCESS: CHECK( mods[i]->overlap_observed ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:177: SUCCESS: CHECK( mods[i]->milestones_received == TOTAL_TICKS / 2500 ) is correct!
+  values: CHECK( 4 == 4 )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:178: SUCCESS: CHECK( mods[i]->milestones_valid ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:180: SUCCESS: CHECK( Math::is_equal_approx(val, TOTAL_TICKS * step_dt, 0.01) ) is correct!
+  values: CHECK( true )
+  logged: expected_overlap := 8
+
+./modules/sandbox_sim/tests/test_simulation_server.h:183: SUCCESS: CHECK( eb->get_pending_deferred_count() == 0 ) is correct!
+  values: CHECK( 0 == 0 )
+  logged: expected_overlap := 8
+
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 1310 skipped
+[doctest] assertions: 65 | 65 passed | 0 failed |
+[doctest] Status: SUCCESS!

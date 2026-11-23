@@ -204,6 +204,9 @@ Error EditorExportPlatformWindows::modify_template(const Ref<EditorExportPreset>
 }
 
 Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
+	RETURN_IF_ERROR(notifier.error);
+
 	String custom_debug = p_preset->get("custom_template/debug");
 	String custom_release = p_preset->get("custom_template/release");
 	String arch = p_preset->get("binary_format/architecture");
@@ -306,9 +309,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		pck_path = pck_path.get_basename() + ".tmp";
 	}
 
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, export_as_zip);
-
-	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags, !export_as_zip);
+	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags, false);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
 		return err;

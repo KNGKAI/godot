@@ -1,0 +1,14 @@
+[gd_resource type="WorldPartitionManifest" format=3]
+
+[sub_resource type="WorldPartitionLayer" id="Layer"]
+layer_id = &"meso"
+
+[sub_resource type="WorldPartitionCell" id="Cell"]
+cell_id = &"origin"
+layer = &"meso"
+grid_coords = Vector2i(0, 0)
+high_scene_path = "res://cell.tscn"
+
+[resource]
+layers = [SubResource("Layer")]
+cells = [SubResource("Cell")]

@@ -1,0 +1,782 @@
+{
+  "run_id": "22948c20e4514989a32d0b9296e51ae0",
+  "started_utc": "2026-11-23T13:25:56.542626+00:00",
+  "engine_sha256": "0a0c54b0710e020df10ca05ea948c36dead3240f029c39c0a00bb07b6b6533fa",
+  "max_fps": 240,
+  "modes": {
+    "fast": {
+      "after": {
+        "audio_seconds": 8.38399982452393,
+        "body_x": 8.48337554931641,
+        "clock_ticks": 8374,
+        "drawn_frames": 1979,
+        "module_seconds": 418.700000000061,
+        "module_ticks": 8374,
+        "physics_ticks": 509,
+        "ui_seconds": 8.50652958152942,
+        "usec": 16433833
+      },
+      "audio_device": "Default",
+      "audio_driver": "WASAPI",
+      "audio_playing": true,
+      "audio_scale_max": 1.0,
+      "audio_scale_min": 1.0,
+      "before": {
+        "audio_seconds": 1.37600004673004,
+        "body_x": 1.48333263397217,
+        "clock_ticks": 1370,
+        "drawn_frames": 298,
+        "module_seconds": 68.4999999999983,
+        "module_ticks": 1370,
+        "physics_ticks": 89,
+        "ui_seconds": 1.50236291486291,
+        "usec": 9438172
+      },
+      "body_state": "JoltPhysicsDirectBodyState3D",
+      "command_region_changed_pixels": 3071,
+      "display": "Windows",
+      "event": "finished",
+      "gpu": "NVIDIA GeForce GTX 1050 Ti",
+      "mode": "fast",
+      "module_id": "gate1.clock_probe",
+      "physics_step_max": 0.0166666675359011,
+      "physics_step_min": 0.0166666675359011,
+      "pid": 12236,
+      "player_pitch": 1.0,
+      "render_driver": "vulkan",
+      "renderer": "forward_plus",
+      "resolution": "(640, 360)",
+      "scale_samples": 1980,
+      "sim_paused": false,
+      "sim_scale": 50.0,
+      "terminal_engaged": true,
+      "terminal_first_attach_usec": 870206,
+      "terminal_text": "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+      "version": "4.8-beta (custom_build)",
+      "elapsed_seconds": 6.995661,
+      "sim_seconds_per_second": 50.05960122997136,
+      "physics_hz": 60.03721449624274,
+      "audio_seconds_per_second": 1.0017637758310314,
+      "max_edit_ms": 9.4047,
+      "max_post_draw_ms": 11.1143,
+      "input_samples": [
+        {
+          "key": "a",
+          "frame": 308,
+          "edit_ms": 7.5537,
+          "post_draw_ms": 9.6052
+        },
+        {
+          "key": "b",
+          "frame": 322,
+          "edit_ms": 3.9238,
+          "post_draw_ms": 6.1875
+        },
+        {
+          "key": "c",
+          "frame": 340,
+          "edit_ms": 5.7458,
+          "post_draw_ms": 7.0065
+        },
+        {
+          "key": "d",
+          "frame": 361,
+          "edit_ms": 4.197,
+          "post_draw_ms": 5.7867
+        },
+        {
+          "key": "e",
+          "frame": 387,
+          "edit_ms": 6.6959,
+          "post_draw_ms": 8.5448
+        },
+        {
+          "key": "f",
+          "frame": 398,
+          "edit_ms": 6.7394,
+          "post_draw_ms": 8.4088
+        },
+        {
+          "key": "g",
+          "frame": 413,
+          "edit_ms": 6.0743,
+          "post_draw_ms": 8.2197
+        },
+        {
+          "key": "h",
+          "frame": 432,
+          "edit_ms": 4.7839,
+          "post_draw_ms": 5.9362
+        },
+        {
+          "key": "i",
+          "frame": 455,
+          "edit_ms": 6.0192,
+          "post_draw_ms": 7.5214
+        },
+        {
+          "key": "j",
+          "frame": 482,
+          "edit_ms": 5.4749,
+          "post_draw_ms": 7.4464
+        },
+        {
+          "key": "k",
+          "frame": 494,
+          "edit_ms": 3.7615,
+          "post_draw_ms": 5.8191
+        },
+        {
+          "key": "l",
+          "frame": 510,
+          "edit_ms": 3.9182,
+          "post_draw_ms": 5.8207
+        },
+        {
+          "key": "m",
+          "frame": 530,
+          "edit_ms": 4.1047,
+          "post_draw_ms": 6.1419
+        },
+        {
+          "key": "n",
+          "frame": 555,
+          "edit_ms": 6.8754,
+          "post_draw_ms": 8.6624
+        },
+        {
+          "key": "o",
+          "frame": 565,
+          "edit_ms": 8.3603,
+          "post_draw_ms": 10.7083
+        },
+        {
+          "key": "p",
+          "frame": 579,
+          "edit_ms": 4.5102,
+          "post_draw_ms": 6.2831
+        },
+        {
+          "key": "q",
+          "frame": 597,
+          "edit_ms": 7.5015,
+          "post_draw_ms": 9.5085
+        },
+        {
+          "key": "r",
+          "frame": 619,
+          "edit_ms": 5.6001,
+          "post_draw_ms": 7.3057
+        },
+        {
+          "key": "s",
+          "frame": 645,
+          "edit_ms": 5.8566,
+          "post_draw_ms": 7.7824
+        },
+        {
+          "key": "t",
+          "frame": 656,
+          "edit_ms": 4.6843,
+          "post_draw_ms": 5.8029
+        },
+        {
+          "key": "u",
+          "frame": 671,
+          "edit_ms": 5.3944,
+          "post_draw_ms": 6.5325
+        },
+        {
+          "key": "v",
+          "frame": 690,
+          "edit_ms": 6.0557,
+          "post_draw_ms": 7.7011
+        },
+        {
+          "key": "w",
+          "frame": 713,
+          "edit_ms": 4.7188,
+          "post_draw_ms": 6.2294
+        },
+        {
+          "key": "x",
+          "frame": 740,
+          "edit_ms": 3.5536,
+          "post_draw_ms": 4.6174
+        },
+        {
+          "key": "y",
+          "frame": 752,
+          "edit_ms": 4.6649,
+          "post_draw_ms": 6.1004
+        },
+        {
+          "key": "z",
+          "frame": 768,
+          "edit_ms": 3.6957,
+          "post_draw_ms": 5.0763
+        },
+        {
+          "key": "a",
+          "frame": 788,
+          "edit_ms": 3.6106,
+          "post_draw_ms": 5.2429
+        },
+        {
+          "key": "b",
+          "frame": 813,
+          "edit_ms": 7.7209,
+          "post_draw_ms": 9.4137
+        },
+        {
+          "key": "c",
+          "frame": 823,
+          "edit_ms": 6.2993,
+          "post_draw_ms": 8.9982
+        },
+        {
+          "key": "d",
+          "frame": 837,
+          "edit_ms": 6.1091,
+          "post_draw_ms": 7.6955
+        },
+        {
+          "key": "e",
+          "frame": 855,
+          "edit_ms": 4.2537,
+          "post_draw_ms": 6.1383
+        },
+        {
+          "key": "f",
+          "frame": 877,
+          "edit_ms": 4.6729,
+          "post_draw_ms": 6.2256
+        },
+        {
+          "key": "g",
+          "frame": 903,
+          "edit_ms": 4.4115,
+          "post_draw_ms": 6.3383
+        },
+        {
+          "key": "h",
+          "frame": 914,
+          "edit_ms": 4.424,
+          "post_draw_ms": 6.595
+        },
+        {
+          "key": "i",
+          "frame": 930,
+          "edit_ms": 8.1429,
+          "post_draw_ms": 10.7308
+        },
+        {
+          "key": "j",
+          "frame": 950,
+          "edit_ms": 5.3838,
+          "post_draw_ms": 7.6254
+        },
+        {
+          "key": "k",
+          "frame": 974,
+          "edit_ms": 6.9633,
+          "post_draw_ms": 9.0849
+        },
+        {
+          "key": "l",
+          "frame": 1002,
+          "edit_ms": 6.3901,
+          "post_draw_ms": 8.5354
+        },
+        {
+          "key": "m",
+          "frame": 1015,
+          "edit_ms": 5.7284,
+          "post_draw_ms": 7.3546
+        },
+        {
+          "key": "n",
+          "frame": 1032,
+          "edit_ms": 9.4047,
+          "post_draw_ms": 11.1143
+        },
+        {
+          "key": "o",
+          "frame": 1053,
+          "edit_ms": 3.7747,
+          "post_draw_ms": 5.5051
+        },
+        {
+          "key": "p",
+          "frame": 1078,
+          "edit_ms": 5.5908,
+          "post_draw_ms": 7.5825
+        },
+        {
+          "key": "q",
+          "frame": 1088,
+          "edit_ms": 4.383,
+          "post_draw_ms": 6.1389
+        },
+        {
+          "key": "r",
+          "frame": 1102,
+          "edit_ms": 4.2513,
+          "post_draw_ms": 6.2504
+        },
+        {
+          "key": "s",
+          "frame": 1120,
+          "edit_ms": 3.8085,
+          "post_draw_ms": 5.3083
+        },
+        {
+          "key": "t",
+          "frame": 1143,
+          "edit_ms": 6.6603,
+          "post_draw_ms": 8.4656
+        },
+        {
+          "key": "u",
+          "frame": 1169,
+          "edit_ms": 4.4013,
+          "post_draw_ms": 5.0787
+        },
+        {
+          "key": "v",
+          "frame": 1180,
+          "edit_ms": 4.362,
+          "post_draw_ms": 7.3837
+        },
+        {
+          "key": "w",
+          "frame": 1196,
+          "edit_ms": 6.1137,
+          "post_draw_ms": 8.0711
+        },
+        {
+          "key": "x",
+          "frame": 1216,
+          "edit_ms": 4.9864,
+          "post_draw_ms": 7.4921
+        },
+        {
+          "key": "y",
+          "frame": 1240,
+          "edit_ms": 5.7467,
+          "post_draw_ms": 7.6838
+        },
+        {
+          "key": "z",
+          "frame": 1268,
+          "edit_ms": 6.1594,
+          "post_draw_ms": 8.167
+        }
+      ],
+      "checks": {
+        "live_sim_module": true,
+        "sim_configuration": true,
+        "jolt_direct_body": true,
+        "jolt_step_60hz": true,
+        "jolt_wall_rate": true,
+        "jolt_motion": true,
+        "audio_device": true,
+        "audio_scale": true,
+        "audio_playhead": true,
+        "terminal_edits": true,
+        "visible_command_line_changed": true,
+        "distinct_draws": true,
+        "terminal_input_under_16_6_ms": true,
+        "terminal_post_draw_under_16_6_ms": true
+      }
+    },
+    "paused": {
+      "after": {
+        "audio_seconds": 8.35200023651123,
+        "body_x": 8.48337554931641,
+        "clock_ticks": 0,
+        "drawn_frames": 1998,
+        "module_seconds": 0.0,
+        "module_ticks": 0,
+        "physics_ticks": 509,
+        "ui_seconds": 8.50645199999984,
+        "usec": 11816952
+      },
+      "audio_device": "Default",
+      "audio_driver": "WASAPI",
+      "audio_playing": true,
+      "audio_scale_max": 1.0,
+      "audio_scale_min": 1.0,
+      "before": {
+        "audio_seconds": 1.37600004673004,
+        "body_x": 1.48333263397217,
+        "clock_ticks": 0,
+        "drawn_frames": 317,
+        "module_seconds": 0.0,
+        "module_ticks": 0,
+        "physics_ticks": 89,
+        "ui_seconds": 1.50228533333333,
+        "usec": 4821474
+      },
+      "body_state": "JoltPhysicsDirectBodyState3D",
+      "command_region_changed_pixels": 3071,
+      "display": "Windows",
+      "event": "finished",
+      "gpu": "NVIDIA GeForce GTX 1050 Ti",
+      "mode": "paused",
+      "module_id": "gate1.clock_probe",
+      "physics_step_max": 0.0166666675359011,
+      "physics_step_min": 0.0166666675359011,
+      "pid": 30924,
+      "player_pitch": 1.0,
+      "render_driver": "vulkan",
+      "renderer": "forward_plus",
+      "resolution": "(640, 360)",
+      "scale_samples": 1999,
+      "sim_paused": true,
+      "sim_scale": 0.0,
+      "terminal_engaged": true,
+      "terminal_first_attach_usec": 693970,
+      "terminal_text": "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+      "version": "4.8-beta (custom_build)",
+      "elapsed_seconds": 6.995478,
+      "sim_seconds_per_second": 0.0,
+      "physics_hz": 60.038785055145624,
+      "audio_seconds_per_second": 0.9972156569974475,
+      "max_edit_ms": 8.8231,
+      "max_post_draw_ms": 10.5002,
+      "input_samples": [
+        {
+          "key": "a",
+          "frame": 327,
+          "edit_ms": 6.7878,
+          "post_draw_ms": 8.28
+        },
+        {
+          "key": "b",
+          "frame": 341,
+          "edit_ms": 4.7192,
+          "post_draw_ms": 6.7537
+        },
+        {
+          "key": "c",
+          "frame": 358,
+          "edit_ms": 3.9021,
+          "post_draw_ms": 5.7217
+        },
+        {
+          "key": "d",
+          "frame": 380,
+          "edit_ms": 7.4877,
+          "post_draw_ms": 9.0781
+        },
+        {
+          "key": "e",
+          "frame": 406,
+          "edit_ms": 8.2823,
+          "post_draw_ms": 10.2153
+        },
+        {
+          "key": "f",
+          "frame": 417,
+          "edit_ms": 5.3688,
+          "post_draw_ms": 6.9257
+        },
+        {
+          "key": "g",
+          "frame": 432,
+          "edit_ms": 5.618,
+          "post_draw_ms": 6.9587
+        },
+        {
+          "key": "h",
+          "frame": 451,
+          "edit_ms": 6.406,
+          "post_draw_ms": 8.0225
+        },
+        {
+          "key": "i",
+          "frame": 474,
+          "edit_ms": 6.8365,
+          "post_draw_ms": 8.8702
+        },
+        {
+          "key": "j",
+          "frame": 501,
+          "edit_ms": 3.7491,
+          "post_draw_ms": 5.8239
+        },
+        {
+          "key": "k",
+          "frame": 513,
+          "edit_ms": 4.9394,
+          "post_draw_ms": 6.031
+        },
+        {
+          "key": "l",
+          "frame": 529,
+          "edit_ms": 4.9962,
+          "post_draw_ms": 7.2978
+        },
+        {
+          "key": "m",
+          "frame": 550,
+          "edit_ms": 8.2127,
+          "post_draw_ms": 10.5002
+        },
+        {
+          "key": "n",
+          "frame": 575,
+          "edit_ms": 5.0062,
+          "post_draw_ms": 6.5184
+        },
+        {
+          "key": "o",
+          "frame": 584,
+          "edit_ms": 2.6937,
+          "post_draw_ms": 4.1018
+        },
+        {
+          "key": "p",
+          "frame": 597,
+          "edit_ms": 3.5758,
+          "post_draw_ms": 5.5682
+        },
+        {
+          "key": "q",
+          "frame": 615,
+          "edit_ms": 8.8231,
+          "post_draw_ms": 10.4643
+        },
+        {
+          "key": "r",
+          "frame": 637,
+          "edit_ms": 6.5072,
+          "post_draw_ms": 8.2432
+        },
+        {
+          "key": "s",
+          "frame": 663,
+          "edit_ms": 2.7659,
+          "post_draw_ms": 3.9864
+        },
+        {
+          "key": "t",
+          "frame": 674,
+          "edit_ms": 7.2256,
+          "post_draw_ms": 8.6594
+        },
+        {
+          "key": "u",
+          "frame": 689,
+          "edit_ms": 4.9952,
+          "post_draw_ms": 6.9274
+        },
+        {
+          "key": "v",
+          "frame": 708,
+          "edit_ms": 6.0786,
+          "post_draw_ms": 8.0352
+        },
+        {
+          "key": "w",
+          "frame": 732,
+          "edit_ms": 7.0911,
+          "post_draw_ms": 9.2419
+        },
+        {
+          "key": "x",
+          "frame": 760,
+          "edit_ms": 6.9769,
+          "post_draw_ms": 8.6997
+        },
+        {
+          "key": "y",
+          "frame": 772,
+          "edit_ms": 3.5885,
+          "post_draw_ms": 4.9253
+        },
+        {
+          "key": "z",
+          "frame": 788,
+          "edit_ms": 3.3562,
+          "post_draw_ms": 4.7565
+        },
+        {
+          "key": "a",
+          "frame": 808,
+          "edit_ms": 3.0609,
+          "post_draw_ms": 4.1515
+        },
+        {
+          "key": "b",
+          "frame": 832,
+          "edit_ms": 2.9109,
+          "post_draw_ms": 3.8418
+        },
+        {
+          "key": "c",
+          "frame": 841,
+          "edit_ms": 3.8897,
+          "post_draw_ms": 6.3617
+        },
+        {
+          "key": "d",
+          "frame": 855,
+          "edit_ms": 6.7446,
+          "post_draw_ms": 8.9725
+        },
+        {
+          "key": "e",
+          "frame": 873,
+          "edit_ms": 4.5388,
+          "post_draw_ms": 7.4077
+        },
+        {
+          "key": "f",
+          "frame": 895,
+          "edit_ms": 3.5997,
+          "post_draw_ms": 4.628
+        },
+        {
+          "key": "g",
+          "frame": 921,
+          "edit_ms": 5.8255,
+          "post_draw_ms": 7.7593
+        },
+        {
+          "key": "h",
+          "frame": 932,
+          "edit_ms": 4.0351,
+          "post_draw_ms": 5.2618
+        },
+        {
+          "key": "i",
+          "frame": 947,
+          "edit_ms": 3.1168,
+          "post_draw_ms": 4.692
+        },
+        {
+          "key": "j",
+          "frame": 966,
+          "edit_ms": 3.9712,
+          "post_draw_ms": 5.2014
+        },
+        {
+          "key": "k",
+          "frame": 989,
+          "edit_ms": 3.6247,
+          "post_draw_ms": 5.8526
+        },
+        {
+          "key": "l",
+          "frame": 1016,
+          "edit_ms": 3.0347,
+          "post_draw_ms": 4.5017
+        },
+        {
+          "key": "m",
+          "frame": 1028,
+          "edit_ms": 2.1177,
+          "post_draw_ms": 3.3661
+        },
+        {
+          "key": "n",
+          "frame": 1044,
+          "edit_ms": 3.8903,
+          "post_draw_ms": 5.2789
+        },
+        {
+          "key": "o",
+          "frame": 1065,
+          "edit_ms": 6.3262,
+          "post_draw_ms": 8.7495
+        },
+        {
+          "key": "p",
+          "frame": 1090,
+          "edit_ms": 6.1062,
+          "post_draw_ms": 8.0866
+        },
+        {
+          "key": "q",
+          "frame": 1100,
+          "edit_ms": 5.612,
+          "post_draw_ms": 7.1243
+        },
+        {
+          "key": "r",
+          "frame": 1114,
+          "edit_ms": 4.7334,
+          "post_draw_ms": 6.6514
+        },
+        {
+          "key": "s",
+          "frame": 1132,
+          "edit_ms": 3.0156,
+          "post_draw_ms": 4.013
+        },
+        {
+          "key": "t",
+          "frame": 1154,
+          "edit_ms": 6.1345,
+          "post_draw_ms": 7.4565
+        },
+        {
+          "key": "u",
+          "frame": 1180,
+          "edit_ms": 3.3594,
+          "post_draw_ms": 4.2829
+        },
+        {
+          "key": "v",
+          "frame": 1191,
+          "edit_ms": 4.95,
+          "post_draw_ms": 5.9206
+        },
+        {
+          "key": "w",
+          "frame": 1206,
+          "edit_ms": 4.271,
+          "post_draw_ms": 5.8147
+        },
+        {
+          "key": "x",
+          "frame": 1225,
+          "edit_ms": 2.2673,
+          "post_draw_ms": 4.192
+        },
+        {
+          "key": "y",
+          "frame": 1248,
+          "edit_ms": 1.7529,
+          "post_draw_ms": 2.5979
+        },
+        {
+          "key": "z",
+          "frame": 1275,
+          "edit_ms": 2.5413,
+          "post_draw_ms": 3.4838
+        }
+      ],
+      "checks": {
+        "live_sim_module": true,
+        "sim_configuration": true,
+        "jolt_direct_body": true,
+        "jolt_step_60hz": true,
+        "jolt_wall_rate": true,
+        "jolt_motion": true,
+        "audio_device": true,
+        "audio_scale": true,
+        "audio_playhead": true,
+        "terminal_edits": true,
+        "visible_command_line_changed": true,
+        "distinct_draws": true,
+        "terminal_input_under_16_6_ms": true,
+        "terminal_post_draw_under_16_6_ms": true
+      }
+    }
+  },
+  "same_executable": true,
+  "passed": true
+}

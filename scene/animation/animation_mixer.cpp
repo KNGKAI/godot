@@ -43,6 +43,10 @@
 #include "scene/resources/audio/audio_stream.h"
 #include "servers/audio/audio_server.h"
 
+#include "modules/sandbox_core/event_bus.h"
+#include "modules/sandbox_core/world_state.h"
+#include "modules/sandbox_narrative/actor_registry.h"
+
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -730,7 +734,8 @@ bool AnimationMixer::_update_caches() {
 				Ref<Resource> resource;
 				Vector<StringName> leftover_path;
 
-				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
+				bool is_sandbox_global_track = (track_src_type == Animation::TYPE_EVENT_BUS || track_src_type == Animation::TYPE_WORLD_STATE || track_src_type == Animation::TYPE_ACTOR_COMMAND);
+				Node *child = is_sandbox_global_track ? this : parent->get_node_and_resource(path, resource, leftover_path);
 				if (!child) {
 					if (check_path) {
 						WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'. This warning can be disabled in Project Settings.");
@@ -929,6 +934,29 @@ bool AnimationMixer::_update_caches() {
 
 						track = track_animation;
 
+					} break;
+					case Animation::TYPE_EVENT_BUS: {
+						TrackCacheEventBus *track_eb = memnew(TrackCacheEventBus);
+						track_eb->object_id = get_instance_id();
+						track = track_eb;
+					} break;
+					case Animation::TYPE_WORLD_STATE: {
+						TrackCacheWorldState *track_ws = memnew(TrackCacheWorldState);
+						track_ws->object_id = get_instance_id();
+						if (path.get_subname_count() > 0) {
+							track_ws->state_key = path.get_concatenated_subnames();
+						} else {
+							track_ws->state_key = StringName(String(path));
+						}
+						track = track_ws;
+					} break;
+					case Animation::TYPE_ACTOR_COMMAND: {
+						TrackCacheActorCommand *track_ac = memnew(TrackCacheActorCommand);
+						track_ac->object_id = get_instance_id();
+						if (path.get_subname_count() > 0) {
+							track_ac->default_actor_id = path.get_concatenated_subnames();
+						}
+						track = track_ac;
 					} break;
 					default: {
 						ERR_PRINT("Animation corrupted (invalid track type).");
@@ -1904,6 +1932,89 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 					}
 				} break;
+				case Animation::TYPE_EVENT_BUS: {
+					if (Math::is_zero_approx(blend) || !EventBus::get_singleton()) {
+						continue;
+					}
+					LocalVector<int> indices;
+					if (seeked) {
+						if (!p_update_only) {
+							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
+							if (idx >= 0) {
+								indices.push_back(idx);
+							}
+						}
+					} else {
+						a->track_get_key_indices_in_range(i, time, delta, start, end, &indices, looped_flag);
+					}
+					for (uint32_t k = 0; k < indices.size(); k++) {
+						int idx = indices[k];
+						StringName ev_id = a->event_bus_track_get_key_event_id(i, idx);
+						if (ev_id == StringName() && track->path.get_subname_count() > 0) {
+							ev_id = track->path.get_concatenated_subnames();
+						}
+						Dictionary ev_payload = a->event_bus_track_get_key_payload(i, idx);
+						if (ev_id != StringName()) {
+							EventBus::get_singleton()->emit(ev_id, ev_payload);
+						}
+					}
+				} break;
+				case Animation::TYPE_WORLD_STATE: {
+					if (Math::is_zero_approx(blend) || !WorldState::get_singleton() || a->track_get_key_count(i) == 0) {
+						continue;
+					}
+					TrackCacheWorldState *t = static_cast<TrackCacheWorldState *>(track);
+					Variant val = a->world_state_track_interpolate(i, time, backward);
+					StringName key = t->state_key;
+					if (val.get_type() == Variant::DICTIONARY) {
+						Dictionary d = val;
+						if (d.has("state_key") && d.has("value")) {
+							key = d["state_key"];
+							val = d["value"];
+						}
+					}
+					if (key != StringName() && val.get_type() != Variant::NIL) {
+						WorldState::get_singleton()->set_value(key, val);
+					}
+				} break;
+				case Animation::TYPE_ACTOR_COMMAND: {
+					if (Math::is_zero_approx(blend) || !ActorRegistry::get_singleton()) {
+						continue;
+					}
+					TrackCacheActorCommand *t = static_cast<TrackCacheActorCommand *>(track);
+					LocalVector<int> indices;
+					if (seeked) {
+						if (!p_update_only) {
+							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
+							if (idx >= 0) {
+								indices.push_back(idx);
+							}
+						}
+					} else {
+						a->track_get_key_indices_in_range(i, time, delta, start, end, &indices, looped_flag);
+					}
+					for (uint32_t k = 0; k < indices.size(); k++) {
+						int idx = indices[k];
+						Variant key_val = a->track_get_key_value(i, idx);
+						if (key_val.get_type() == Variant::DICTIONARY) {
+							Dictionary d = key_val;
+							StringName actor_id = d.get("actor_id", t->default_actor_id);
+							if (actor_id == StringName()) {
+								continue;
+							}
+							if (d.has("control_lock") && (bool)d["control_lock"]) {
+								ActorRegistry::get_singleton()->send_control_lock(actor_id, (bool)d.get("locked", true), d.get("reason", String()));
+							}
+							if (d.has("teleport") && d["teleport"].get_type() == Variant::TRANSFORM3D) {
+								ActorRegistry::get_singleton()->send_teleport(actor_id, d["teleport"]);
+							}
+							StringName action_id = d.get("action_id", d.get("action", StringName()));
+							if (action_id != StringName()) {
+								ActorRegistry::get_singleton()->send_action(actor_id, action_id, d.get("payload", Dictionary()));
+							}
+						}
+					}
+				} break;
 			}
 		}
 	}
@@ -2628,7 +2739,10 @@ AnimationMixer::TrackCache *AnimatedValuesBackup::get_cache_copy(AnimationMixer:
 		}
 
 		case Animation::TYPE_METHOD:
-		case Animation::TYPE_ANIMATION: {
+		case Animation::TYPE_ANIMATION:
+		case Animation::TYPE_EVENT_BUS:
+		case Animation::TYPE_WORLD_STATE:
+		case Animation::TYPE_ACTOR_COMMAND: {
 			// Nothing to do here.
 		} break;
 	}
