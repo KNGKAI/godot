@@ -321,9 +321,9 @@ Because Godot's `SceneTree` attachment and Jolt body insertion must execute on t
   2. Attach visual `Node3D` sub-batches and warm PSO/shader caches.
   3. Notify `EventBus` via `&"stream_cell_activated"` (`{cell_id, layer}`) once complete.
 
-#### 3.8.4 HLOD (Hierarchical Level of Detail) & Impostor Swapping
+#### 3.8.4 HLOD (Hierarchical Level of Detail) Mesh Merging & Swapping
 
-* **Offline Bake Pipeline (`sandbox_editor`):** Designers tag static architecture and terrain props per cell. The Editor HLOD baker merges static geometry within each Meso/Macro cell into a single low-poly proxy mesh with a baked albedo/normal/ORM texture atlas (or an octahedral billboard impostor for distant vegetation/skyscrapers), reducing hundreds of draw calls per city block to **1 draw call**.
+* **Offline Bake Pipeline (`sandbox_editor`):** Designers tag static architecture and terrain props per cell. The Editor HLOD baker merges static geometry within each Meso/Macro cell into a single combined 3D proxy mesh (`SurfaceTool` / `ArrayMesh`) with a rect-packed albedo/normal/ORM texture atlas (`Image`), reducing hundreds of draw calls per city block to **1 draw call** while preserving real 3D lighting and shadows from all viewing angles.
 * **Seamless Runtime Transition:**
   * Beyond the Meso load distance, only the baked HLOD proxy is resident and visible.
   * When the live Meso cell completes `ACTIVE_ATTACHED`, `StreamingServer` runs a brief dithered cross-fade ($0.2\text{ s}$–$0.35\text{ s}$ via shader instance uniform `hlod_fade`) before disabling and optionally unloading the HLOD proxy, eliminating sudden pop-in or visual gaps.
