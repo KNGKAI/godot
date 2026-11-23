@@ -1,91 +1,95 @@
-# Technical Review & Implementation Scope: Modular 3D Sandbox Engine Framework
+# Technical Review & Implementation Scope (v1.2): Modular 3D Sandbox Engine Framework
 
-## 1. Cross-Reference Review: Gemini Capabilities Report vs. `SPEC.md` vs. Local Codebase
+## 1. Cross-Reference Review: Draft v1.2 Specification vs. Local Codebase
 
-We reviewed the shared **Godot Engine 4 Systems Capabilities Review** (`https://gemini.google.com/share/7c0a7ae265e0`), [SPEC.md](./SPEC.md), and the local engine source tree.
+We reviewed the updated Draft v1.2 specification ([SPEC.md](./SPEC.md)) against the **Godot Engine 4 Systems Capabilities Review** and the local C++ source tree.
 
-### 1.1 Alignment with the Gemini Systems Capabilities Review
-[SPEC.md](./SPEC.md) directly addresses every structural boundary identified in the capabilities review:
+### 1.1 Summary of Draft v1.2 Architectural Expansions
+Compared to Draft v1.0, Draft v1.2 ([SPEC.md](./SPEC.md)) expands the framework from bounded 3D levels to **systemic open worlds and dense urban sandboxes** while overhauling **visual narrative authoring and schema-validated editor tooling**:
 
-| Capabilities Review Constraint | `SPEC.md` Architectural Resolution | Codebase Verification Status |
+| v1.2 Expansion Area | Key Components Added / Upgraded | Verified Godot C++ Engine Primitives |
 | :--- | :--- | :--- |
-| **`Engine.time_scale` & Jolt Determinism (§3)** | Decouples `SandboxClock` (`sim_clock`, `physics_clock`, `narrative_ui_clock`) in `main/main.cpp`; restricts deterministic state to `SimulationServer`. | Verified in `main/main.cpp` and `main/main_timer_sync.h`. |
-| **GDExtension `ClassDB` Ceiling & Singleton Quirks (§4)** | Implements core subsystems as static C++ modules (`modules/sandbox_*/`) with native lifecycle hooks and internal header access. | Verified in `modules/SCsub` and `modules/register_module_types.h`. |
-| **`SceneTree` Single-Threaded Constraint & `WorkerThreadPool` Rules (§5)** | Uses Server Pattern (`SimulationServer`) with `RID_Alloc<T, true>` and enforces the 4 `WorkerThreadPool` invariants. | Verified in `core/templates/rid_owner.h` and `core/object/worker_thread_pool.h`. |
-| **`AnimationTrackEditor` Unexposed to `ClassDB` (§6)** | Patches `Animation::TrackType`, `AnimationMixer`, and `AnimationTrackEditor` in C++ while pairing with `SequenceDirector` (`Tween.tween_await()`). | Verified in `scene/resources/animation.h`, `scene/animation/animation_mixer.cpp`, `editor/animation/animation_track_editor.cpp`, and `scene/animation/tween.h`. |
-| **Diegetic 3D `SubViewport` Rendering & Input Traps (§7)** | Enforces `disable_3d = true`, MSDF fonts, min 256×256 FSR2 guard, no `SubViewportContainer`, camera-center raycast in captured mode, and native `Viewport` focus routing. | Verified in `scene/main/viewport.h` and `scene/main/viewport.cpp`. |
-| **4.6+ `EditorDock`, `EditorDebuggerPlugin` IPC, & Security (§8)** | Uses `EditorDock` (`EditorPlugin::add_dock`), bidirectional `sandbox:*` debugger messages, primitive-only `.sbsav`/`.json` saves (`allow_objects = false`), and CSWSH/DNS-rebinding guards under `#ifdef DEBUG_ENABLED`. | Verified in `editor/docks/editor_dock.h`, `editor/plugins/editor_plugin.h`, `editor/debugger/editor_debugger_plugin.h`, and `core/debugger/engine_debugger.h`. |
+| **Schema Registry & Save Envelope v2 (`modules/sandbox_core`)** | `SandboxSchemaRegistry` `.tres` manifest + dynamic discovery merge; Schema v2 saves with `world_origin_64`, `streaming_cell_diffs`, and pre-save hydration flush. | `Resource`, `ProjectSettings`, `StreamPeerBuffer`, `JSON` (`core/io/resource_loader.h`). |
+| **Spatial Partitioning, Per-LOD Streaming, HLOD, & Floating Origin (`modules/sandbox_streaming`)** | Opt-in `StreamingServer`, `WorldPartitionGrid` (Macro/Meso/Micro), 5-state async per-LOD loader, $\le 2.0\text{ ms}$ time-sliced activation (Jolt colliders first), dithered HLOD swapper, `OriginShifter` (`WorldPos64` / `REAL_T_IS_DOUBLE`). | `ResourceLoader::load_threaded_request` (`core/io/resource_loader.h`), `RS::instance_geometry_set_shader_parameter` (`servers/rendering/rendering_server.h`), `Node3D::reset_physics_interpolation` (`scene/3d/node_3d.h`). |
+| **Simulation-to-Node Actor Hydration Bubble (`modules/sandbox_bubble`)** | Opt-in `HydrationBubble` (Tier 0 SoA $\leftrightarrow$ Tier 1 `MultiMesh` proxy ring $\leftrightarrow$ Tier 2 pooled `Node3D`), hysteresis ($R_{\text{in}} < R_{\text{out}}$), velocity-biased ellipsoid, `ActorNodePool`, `HydratableActor`, `HYDRATION_PIN`. | `RS::multimesh_set_buffer`, `RS::multimesh_set_visible_instances`, `RS::multimesh_instances_reset_physics_interpolation` (`servers/rendering/rendering_server.h`). |
+| **Branching Mission & Sequence Graph Model (`modules/sandbox_narrative`)** | `MissionTransition` graph edges, `SequenceData` step DAG (sequential awaits, parallel forks, join barriers, conditional branches), `CondNot`, `ActionBranchCondition`, `_editor_graph_meta`. | `Tween::tween_await` (`scene/animation/tween.h`), `Animation` custom tracks (`scene/resources/animation.h`). |
+| **Visual Narrative `GraphEdit`, Schema Pickers, & HLOD Baker (`modules/sandbox_editor`)** | 5-tab `EditorDock`, `GraphEdit` + `GraphNode` + `GraphFrame` canvas with live `sandbox:narrative_trace` highlighting, `SandboxIdPickerProperty` (`EditorInspectorPlugin` + 3D viewport eyedropper), `EditorExportPlugin` metadata stripper & strict schema gate, offline HLOD baker. | `GraphEdit`, `GraphEdit::arrange_nodes`, `GraphEdit::set_connection_activity` (`scene/gui/graph_edit.h`), `GraphNode` (`scene/gui/graph_node.h`), `EditorInspectorPlugin`, `EditorProperty` (`editor/inspector/editor_inspector.h`), `EditorExportPlugin` (`editor/export/editor_export_plugin.h`). |
 
 ---
 
-### 1.2 Critical Technical Findings & Gaps Identified in `SPEC.md`
+### 1.2 Critical Technical Findings & Implementation Constraints for Draft v1.2
 
-During our codebase audit, we identified **6 technical nuances and edge cases** that must be accounted for during implementation:
-
-> [!WARNING]
-> **Finding 1: Repository Baseline is Godot `4.8.0-beta` (`master`), whereas `SPEC.md` specifies `4.7.2`**
-> `version.py` in this repository is currently at `4.8.0.beta` (commit `67421f36e5`). All C++ APIs required by `SPEC.md` (`EditorDock`, `Tween::tween_await()`, `Animation::folded_groups`, `RID_Alloc`, `WorkerThreadPool`) exist in this tree, and the `.NET 10` requirement in 4.8 only applies when compiling with `module_mono_enabled=yes`.
+In addition to the 6 core findings from our v1.0 audit (baseline version `4.8.0-beta` vs `4.7.2`, `AnimationMixer::_update_caches()` node-resolution bypass, `AnimationTrackEdit` fixed `type_icons[9]` bounds, `WorldState` dual SoA layout, `sim_clock` spiral-of-death cap, and pre-handshake HTTP `403` validation on `SandboxDebugServer`), our codebase audit for **Draft v1.2** surfaced **5 new architectural constraints**:
 
 > [!IMPORTANT]
-> **Finding 2: `AnimationMixer::_update_caches()` Node Resolution & `AnimationTrackEdit` Fixed Array Bounds**
-> 1. **Path Shift in Godot 4.6+:** `SPEC.md` §3.5 references `editor/animation_track_editor.cpp`, which is now located at `editor/animation/animation_track_editor.cpp`, and `animation_mixer.cpp` is at `scene/animation/animation_mixer.cpp`.
-> 2. **Singleton Track Resolution:** In `scene/animation/animation_mixer.cpp`, `_update_caches()` resolves every track's `NodePath` against `root_node` via `parent->get_node_and_resource()` and skips the track if `child == nullptr`. Because `TYPE_EVENT_BUS`, `TYPE_WORLD_STATE`, and `TYPE_ACTOR_COMMAND` target global C++ singletons (`EventBus`, `WorldState`, `ActorRegistry`) rather than scene nodes, `_update_caches()` must bypass scene-node resolution for these three track types (using the track `NodePath` subname or path string directly as the `event_id`, `state_key`, or `actor_id`).
-> 3. **Hardcoded Icon Array & `DEV_ASSERT`s:** `AnimationTrackEdit::_get_key_type_icon()` indexes a fixed `type_icons[9]` array by `TrackType`—adding 3 enum values without expanding this array to `type_icons[12]` will cause an immediate out-of-bounds crash. Additionally, `Animation::get_cache_type()` and the `DEV_ASSERT(false)` switches in `_confirm_insert()` and `_insert_key_from_track()` must be updated.
+> **Finding 7 (`sandbox_streaming`): Single-Subthread Scene Loading & True VRAM Unloading**
+> 1. **ResourceLoader Thread Mode:** Because concurrent off-tree scene instantiation across multiple threads is unsafe due to shared global `Resource` mutation, `StreamingServer` must invoke `ResourceLoader::load_threaded_request(path, "", /*p_use_sub_threads=*/false, ResourceFormatLoader::CACHE_MODE_REUSE)` and perform `PackedScene::instantiate()` during the time-sliced `STAGED` $\rightarrow$ `ACTIVE_ATTACHED` main-thread phase.
+> 2. **Strict Path-Only Manifests for VRAM Reclamation:** Godot's `ResourceCache` releases `Mesh` and `Texture2D` RIDs from `RenderingServer` only when the last `Ref<Resource>` drops to zero. `WorldPartitionManifest` and `WorldPartitionCell` must store strictly `String` paths (never cached `Ref<PackedScene>` properties on the manifest) and normalize/validate every path via `simplify_path()` to enforce `res://` prefixing and reject `..` or `user://` scripts (Security §5 & Gate #5).
+
+> [!IMPORTANT]
+> **Finding 8 (`sandbox_streaming` + `sandbox_bubble`): `MultiMesh` Physics Interpolation Reset on Origin Shift**
+> When `OriginShifter` executes an atomic shift $-\Delta \vec{O}$ at the start of the physics tick (§3.8.5), calling `Node3D::reset_physics_interpolation()` on shifted scene nodes is necessary but not sufficient when `sandbox_bubble` is active: Tier 1 `MultiMesh` proxy instances are managed directly via `RenderingServer` RIDs without `Node3D` wrappers. `OriginShifter` must therefore also translate active Tier 1 `MultiMesh` buffers and invoke `RenderingServer::get_singleton()->multimesh_instances_reset_physics_interpolation(mm_rid)` so distant traffic and crowds do not streak across the frame during an origin shift.
 
 > [!NOTE]
-> **Finding 3: Dual Storage Requirement in `WorldState` (Contiguous SoA vs. Named Channels)**
-> `SPEC.md` §3.2 mandates contiguous C++ Structure-of-Arrays (SoA) blocks indexed by `RID` handles, while §3.5 (`TYPE_WORLD_STATE`), §3.3 (`state.set`), and §4.1 (JSON schema `"weather.rain_intensity": 0.42`) require string-keyed variable access and timeline interpolation. `WorldState` should therefore unify:
-> - **Named Scalar SoA Channels:** Interned `StringName` keys mapped via `AHashMap<StringName, uint32_t>` to dense typed arrays (`LocalVector<double>`, `LocalVector<int64_t>`, `LocalVector<uint8_t>`, `LocalVector<String>`) supporting zero-boxing worker-thread reads/writes and direct `TYPE_WORLD_STATE` timeline interpolation.
-> - **RID Entity SoA Tables:** Multi-column contiguous buffers allocated via `RID_Alloc<SimEntitySlot, true>` with a single-threaded end-of-tick structural commit phase (Invariant #3).
+> **Finding 9 (`sandbox_editor`): `EditorInspectorPlugin` Coverage for `AnimationTrackKeyEdit` & 3D Eyedropper**
+> 1. **Automatic Timeline Keyframe Picker Reuse:** When a designer selects a keyframe in `AnimationTrackEditor`, Godot pushes an `AnimationTrackKeyEdit` helper `Object` (`editor/animation/animation_track_editor.h`) to `InspectorDock`. By having `AnimationTrackKeyEdit::_get_property_list()` emit `PROPERTY_HINT_NONE` with hint strings `"sandbox_event_id"`, `"sandbox_world_state_key"`, and `"sandbox_actor_id"` for the three custom track types—and having `SandboxInspectorPlugin::can_handle(Object *)` accept both `AnimationTrackKeyEdit` and any `Node`/`Resource`—the exact same `SandboxIdPickerProperty` dropdown, fuzzy search, validation badges, and 3D eyedropper work identically in both the Inspector and the Animation timeline!
+> 2. **3D Eyedropper Input Forwarding:** To pick a `SandboxActor` or `Marker3D` from the 3D Editor viewport in one click (§3.7.3), `SandboxEditorPlugin` calls `set_input_event_forwarding_always_enabled()` (`editor/plugins/editor_plugin.h`) and intercepts mouse clicks in `forward_3d_gui_input(Camera3D *, Ref<InputEvent>)` only while an eyedropper session is armed.
 
-4. **High-Speed (`100x`) `sim_clock` Spiral-of-Death Protection:**
-   In `SPEC.md` §3.1, `sim_clock` supports up to `100x` fast-forward. If a frame stalls or `SimModule` workloads exceed real-time capacity at `100x`, an unbounded fixed-step loop in `Main::iteration()` will starve rendering and terminal input (violating Acceptance Gate #1's `< 16.6 ms` terminal latency requirement). `SandboxClock` must enforce a configurable `max_sim_steps_per_frame` and wall-clock microsecond budget per frame.
-5. **Automatic Thread-Aware `EventBus` Dispatch:**
-   In `SPEC.md` §3.2, host `SimModule::on_tick(delta_sim, state, events)` receives `EventBus`. If a worker thread calls `events.emit(...)` instead of `events.dispatch_deferred(...)`, emitting a Godot signal directly from a worker thread would violate SceneTree thread safety (Invariant #4). `EventBus::emit()` should check `Thread::is_main_thread()` and automatically route off-main-thread calls into the mutex-guarded deferred ring buffer.
-6. **Hardened Local Debug `CommandBus` WebSocket Handshake (§5 & §6.5):**
-   Godot's built-in `WebSocketPeer` does not expose a pre-handshake HTTP `403 Forbidden` rejection callback when used standalone. To satisfy Acceptance Gate #5 (*"Attempt an unauthenticated or mismatched-Origin WebSocket handshake against the debug CommandBus port; confirm termination with HTTP 403 Forbidden"*), `SandboxDebugServer` (`#ifdef DEBUG_ENABLED`) will accept connections on `TCPServer` bound strictly to `127.0.0.1`, parse and validate the HTTP `Host`, `Origin`, and `Authorization: Bearer <nonce>` headers first, write `HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n` on failure, and only upgrade valid sockets or process authenticated JSON-RPC/CommandBus frames.
+> [!CAUTION]
+> **Finding 10 (`sandbox_editor`): `EditorExportPlugin::_customize_resource()` Must Duplicate Before Stripping `_editor_graph_meta`**
+> In `editor/export/editor_export_plugin.h`, `_customize_resource(const Ref<Resource> &p_resource, const String &p_path)` passes the live `Resource` instance currently open in the Editor. Mutating `p_resource` in-place to strip `_editor_graph_meta` during an export would wipe the designer's in-memory node layout in the active Editor session. `SandboxExportPlugin::_customize_resource()` must call `p_resource->duplicate(false)`, clear `_editor_graph_meta` on the duplicate, and return the duplicate.
 
 ---
 
-## 2. Architecture & Component Dependency Graph
+## 2. Updated Architecture & Component Dependency Graph (v1.2)
 
 ```mermaid
 flowchart TD
     subgraph Tier1["Tier 1: Minimal Core Patches (main/, scene/, editor/)"]
-        MainLoop["main/main.cpp\nSandboxClock Hook"]
+        MainLoop["main/main.cpp\nSandboxClock + OriginShifter Physics-Start Hook"]
         AnimCore["scene/resources/animation.{h,cpp}\nscene/animation/animation_mixer.{h,cpp}\nTYPE_EVENT_BUS | TYPE_WORLD_STATE | TYPE_ACTOR_COMMAND"]
-        AnimEd["editor/animation/animation_track_editor.cpp\nCustom Track UI & Key Inspector"]
+        AnimEd["editor/animation/animation_track_editor.cpp\nCustom Track UI & Schema Hint Key Inspector"]
         VpFocus["scene/main/viewport.{h,cpp}\nNative Terminal SubViewport Focus Override"]
     end
 
     subgraph Tier2["Tier 2: Static Engine Modules (modules/)"]
-        CoreMod["modules/sandbox_core/\nSandboxClock, WorldState (SoA), EventBus,\nCommandBus, SandboxSave (.sbsav / .json),\nSandboxDebugServer (#ifdef DEBUG_ENABLED)"]
+        CoreMod["modules/sandbox_core/\nSandboxClock, WorldState (SoA), EventBus,\nCommandBus, SandboxSerializer (Schema v2),\nSandboxSchemaRegistry, SandboxDebugServer"]
         SimMod["modules/sandbox_sim/\nSimulationServer (RID_Owner + WorkerThreadPool),\nSimModule Resource, RingBuffer Rewind Snapshots"]
-        NarrMod["modules/sandbox_narrative/\nSandboxActor, ActorRegistry, MissionRunner,\nSequenceDirector, SandboxCondition, SequenceAction"]
+        StreamMod["modules/sandbox_streaming/ (Opt-In)\nStreamingServer, WorldPartitionGrid, Per-LOD Async Loader,\nTime-Sliced Activator, HLOD Swapper, OriginShifter"]
+        BubbleMod["modules/sandbox_bubble/ (Opt-In)\nHydrationBubble, ActorNodePool, MultiMesh Proxy Ring,\nHydratableActor, HYDRATION_PIN & Pre-Save Flush"]
+        NarrMod["modules/sandbox_narrative/\nSandboxActor, ActorRegistry, MissionRunner,\nSequenceDirector, MissionData/SequenceData DAG"]
     end
 
-    subgraph Tier3["Tier 3: Dual Control Interfaces (modules/)"]
-        TermMod["modules/sandbox_terminal/\nTerminalDisplay3D (SubViewport + Area3D),\nTerminalParser, TerminalCLIControl, Permission Guards"]
-        EdMod["modules/sandbox_editor/ (#ifdef TOOLS_ENABLED)\nSandboxEditorPlugin, SandboxEditorDock,\nSandboxEditorDebuggerPlugin <-> EngineDebugger IPC"]
+    subgraph Tier3["Tier 3: Dual Control & Authoring Interfaces (modules/)"]
+        TermMod["modules/sandbox_terminal/\nTerminalDisplay3D (SubViewport + Area3D),\nTerminalParser, Permission & Namespace Guards"]
+        EdMod["modules/sandbox_editor/ (#ifdef TOOLS_ENABLED)\n5-Tab SandboxEditorDock, GraphEdit Narrative Editor,\nSandboxIdPickerProperty (EditorInspectorPlugin + 3D Eyedropper),\nHLOD Baker, SandboxExportPlugin, EditorDebuggerPlugin"]
     end
 
-    subgraph Tier4["Tier 4: Verification & Host Harnesses"]
-        CppTests["modules/sandbox_*/tests/\ndoctest C++ Unit & Concurrency Tests"]
-        Harnesses["tests/sandbox_harnesses/\n1st-Person CharacterBody3D + RTS Top-Down\nShared Mission, Cutscene & 3D Terminal Proof"]
+    subgraph Tier4["Tier 4: Verification Gates & Host Harnesses"]
+        CppTests["modules/sandbox_*/tests/\ndoctest Suites for Gates 1–8"]
+        Harnesses["tests/sandbox_harnesses/\n1st-Person + RTS Domain Proof, 16x16km Streaming World,\n2,000-Agent Hydration District, 15-Node Graph Mission"]
     end
 
     MainLoop --> CoreMod
     MainLoop --> SimMod
+    MainLoop --> StreamMod
+    MainLoop --> BubbleMod
     AnimCore --> CoreMod
     AnimCore --> NarrMod
     AnimEd --> AnimCore
     VpFocus --> TermMod
     SimMod --> CoreMod
+    StreamMod --> CoreMod
+    BubbleMod --> CoreMod
+    BubbleMod --> SimMod
+    BubbleMod --> StreamMod
     NarrMod --> CoreMod
     TermMod --> CoreMod
     TermMod --> NarrMod
     EdMod --> CoreMod
     EdMod --> SimMod
+    EdMod --> StreamMod
+    EdMod --> BubbleMod
     EdMod --> NarrMod
     CppTests --> Tier2
     CppTests --> Tier3
@@ -94,164 +98,163 @@ flowchart TD
 
 ---
 
-## 3. Detailed Implementation Scope (Work Breakdown Structure)
+## 3. Rescoped 8-Phase Implementation Plan (Work Breakdown Structure)
 
 ### Phase 1: `modules/sandbox_core` & Tier 1 `SandboxClock` Main-Loop Hook
-Establishes the foundational singletons, multi-clock scheduler, SoA state storage, command/event routing, hardened serialization, and local debug server.
+Establishes the core singletons, multi-clock scheduler, SoA state storage, `SandboxSchemaRegistry`, command/event routing, Schema v2 hardened serialization, and local debug server.
 
-#### 1.1 Files to Create (`modules/sandbox_core/`)
-* `modules/sandbox_core/config.py`, `SCsub`, `register_types.h`, `register_types.cpp`
-  * Registers singletons (`SandboxClock`, `WorldState`, `EventBus`, `CommandBus`, `SandboxSerializer`) at `MODULE_INITIALIZATION_LEVEL_SERVERS` / `SCENE`.
-* `modules/sandbox_core/sandbox_clock.{h,cpp}`
-  * Manages three decoupled clocks:
-    * `sim_clock`: `paused`, `time_scale` (`0.0` to `100.0`), `fixed_tick_hz` (default `20.0`), `step_pending_ticks` (`step(n)`), `max_steps_per_frame`, and `max_frame_budget_usec`.
-    * `physics_clock`: Wraps/monitors standard `MainTimerSync` parameters.
-    * `narrative_ui_clock`: Unscaled real-time delta (`unscaled_delta`) and independent `narrative_time_scale`.
-* `modules/sandbox_core/world_state.{h,cpp}`
-  * **Named Scalar Channels (SoA):** `register_channel(name, type, default_val)`, fast handle lookup `get_channel_id(name)`, typed getters/setters (`set_float`, `get_float`, `set_int`, `get_int`, `set_bool`, `get_bool`, `set_string`, `get_string`), and generic `get_value` / `set_value` / `interpolate_value` for `AnimationMixer`.
-  * **Entity SoA Tables:** `RID`-backed tables (`create_table`, `allocate_row`, `free_row`, `get_column_float_ptr`, etc.) with `lock_structure()` during parallel `WorkerThreadPool` execution and `commit_structural_changes()` post-tick.
-* `modules/sandbox_core/event_bus.{h,cpp}`
-  * `subscribe(event_id, callable)`, `unsubscribe(event_id, callable)`, `emit(event_id, payload)`, `dispatch_deferred(event_id, payload)`.
-  * Mutex-guarded deferred ring buffer (`RingBuffer<DeferredEvent>`) automatically used whenever `emit()` is invoked off the main thread; flushed via `flush_deferred()` on the main thread.
-  * Structured ring-buffer event history for Editor/Terminal inspection.
-* `modules/sandbox_core/command_bus.{h,cpp}`
-  * `enum PermissionLevel { PERMISSION_GUEST = 0, PERMISSION_USER = 1, PERMISSION_ADMIN = 2, PERMISSION_DEV = 3 }`.
-  * `register_command(name, min_permission, arg_signature, handler, help_text)`.
-  * Built-in core commands: `help`, `sim.pause`, `sim.resume`, `sim.step`, `sim.speed`, `sim.rewind`, `state.get`, `state.set`, `state.list`, `event.fire`, `mission.start`, `mission.status`.
-  * `execute(command_line, caller_id, caller_permission, allowed_namespaces)` with strict `Variant::Type` signature validation, rate-limiting (commands/sec window), 512-byte input cap, and audit log ring buffer.
-  * `#ifndef DEBUG_ENABLED` compile-time exclusion of `PERMISSION_DEV` command registration and execution.
-* `modules/sandbox_core/sandbox_serializer.{h,cpp}`
-  * **Binary Snapshot (`.sbsav`):** Fixed magic header (`SBSV`), `schema_version`, `sim_tick_index`, `sim_time_elapsed`, raw primitive SoA channel buffers, `SimModule` primitive byte blobs, and mission state using `StreamPeerBuffer` (zero `Variant` object serialization; `allow_objects = false` enforced on any Variant buffer helpers).
-  * **Structured JSON (`.json`):** Schema v1 serializer/deserializer with strict type, schema version, and numeric bound validation (rejects any embedded `Object`/`Resource` constructs with `ERR_INVALID_DATA`).
-* `modules/sandbox_core/sandbox_debug_server.{h,cpp}`
-  * Entirely wrapped in `#ifdef DEBUG_ENABLED`.
-  * Uses `TCPServer` bound strictly to `127.0.0.1` (and optionally `::1`).
-  * Generates a 32-byte cryptographically random hex Bearer token at startup via `CryptoCore::RandomGenerator`.
-  * Validates HTTP upgrade `Host` (`127.0.0.1` / `localhost`, blocking `0.0.0.0/8`), `Origin` allowlist, and `Authorization: Bearer <token>`; immediately returns `HTTP/1.1 403 Forbidden` and closes connection on violation.
-
-#### 1.2 Tier 1 Patch (`main/main.cpp`)
-* Modify `main/main.cpp` inside `Main::iteration()`:
-  * Feed `ticks_elapsed` / `process_step` (unscaled real time) into `SandboxClock::get_singleton()->advance(process_step)`.
-  * Drive `SimulationServer::get_singleton()->step(sim_fixed_delta)` for the computed number of `sim_clock` ticks (independent of `Engine::get_effective_time_scale()`).
-  * Flush `EventBus::get_singleton()->flush_deferred()` on the main thread after simulation stepping and poll `EngineDebugger` telemetry (`#ifdef DEBUG_ENABLED`).
+* **Files to Create (`modules/sandbox_core/`):**
+  * `config.py`, `SCsub`, `register_types.{h,cpp}`
+  * `sandbox_clock.{h,cpp}` — Decoupled `sim_clock` (pause, `step(n)`, $0\times\text{–}100\times$ speed, per-frame spiral-of-death budget), `physics_clock`, and `narrative_ui_clock` (unscaled real time).
+  * `world_state.{h,cpp}` — Dual SoA storage:
+    1. **Named Scalar SoA Channel Bank:** `AHashMap<StringName, uint32_t>` mapping keys (`&"weather.rain_intensity"`) to dense typed `LocalVector` columns (`double`, `int64_t`, `uint8_t`, `String`) for zero-boxing worker-thread access and timeline interpolation.
+    2. **Entity SoA Tables:** `RID`-indexed multi-column contiguous buffers with `lock_structure()` during parallel `WorkerThreadPool` execution and single-threaded `commit_structural_changes()` post-tick.
+  * `sandbox_schema_registry.{h,cpp}` — `SandboxSchemaRegistry : public Resource` loaded from `GLOBAL_GET("sandbox/schema/registry_path")`:
+    * Stores typed descriptors for **WorldState Keys** (`key`, `value_type`, `default_value`, `range_hint`, `deprecated`, `description`), **EventBus Events** (`event_id`, `payload_schema`, `deprecated`, `description`), and **Actor / Tag / Archetype Catalogs**.
+    * Implements `merge_dynamic_discovery()` (merges `SimModule::get_declared_schema()` and active scene `SandboxActor` / `Marker3D` IDs in editor builds) and `validate_reference(category, id, expected_type)`.
+  * `event_bus.{h,cpp}` — Typed pub-sub router with thread-aware `emit()` (automatically routes off-main-thread calls into the mutex-guarded `dispatch_deferred` ring buffer), main-thread `flush_deferred()`, and inspection history ring buffer.
+  * `command_bus.{h,cpp}` — Permission-tiered (`GUEST`, `USER`, `ADMIN`, `DEV` guarded by `#ifdef DEBUG_ENABLED`), type-checked command router with rate-limiting, 512-byte buffer cap, autocomplete metadata, and audit log.
+  * `sandbox_serializer.{h,cpp}` — **Schema Envelope v2** (`.sbsav` binary via `StreamPeerBuffer` and `.json` structured text):
+    * Enforces `allow_objects = false` across all deserializers; bans `ResourceLoader`/`ResourceSaver` for save files.
+    * Serializes `schema_version = 2`, `world_origin_64`, `world_state`, `sim_modules` primitive blobs, `streaming_cell_diffs` sparse bitmasks, and `missions` progress.
+    * Invokes `HydrationBubble::flush_active_actors_to_soa()` prior to saving so snapshots are independent of which actors are currently hydrated.
+  * `sandbox_debug_server.{h,cpp}` — `#ifdef DEBUG_ENABLED` local `127.0.0.1` `TCPServer` inspecting raw HTTP upgrade requests for `Host` (blocking `0.0.0.0/8`), `Origin` allowlist, and per-session `CryptoCore::RandomGenerator` Bearer token before upgrading; terminates unauthorized handshakes with `HTTP/1.1 403 Forbidden`.
+* **Tier 1 Patch (`main/main.cpp`):**
+  * Hook `OriginShifter::check_and_shift()` at the start of the physics tick (prior to `iteration_prepare()`).
+  * Hook `SandboxClock::advance(process_step)` to drive `SimulationServer::step(sim_delta)`, followed by main-thread `EventBus::flush_deferred()`, `HydrationBubble::update()`, and `StreamingServer::update()`.
 
 ---
 
 ### Phase 2: `modules/sandbox_sim` (`SimulationServer`, `SimModule`, & Rewind Ring Buffer)
-Implements the multi-threaded simulation server outside the `SceneTree`.
+Implements the multi-threaded simulation server and deterministic rewind snapshots.
 
-#### 2.1 Files to Create (`modules/sandbox_sim/`)
-* `modules/sandbox_sim/config.py`, `SCsub`, `register_types.{h,cpp}`
-* `modules/sandbox_sim/sim_module.{h,cpp}`
-  * `SimModule : public Resource` exposing `module_id: StringName`, `tick_rate_hz: float = 2.0`, `priority: int = 0`, `thread_safe_tick: bool = false`.
-  * Virtual/GDVIRTUAL methods: `_on_init(state, events)`, `_on_tick(delta_sim, state, events)`, `_on_snapshot_write() -> PackedByteArray`, `_on_snapshot_read(data)`.
-* `modules/sandbox_sim/simulation_server.{h,cpp}`
-  * Thread-safe `RID_Alloc<SimModuleInstance, true>` and `RID_Alloc<SimEntityData, true>`.
-  * Module registration (`register_module(Ref<SimModule>)`, `unregister_module(RID)`), per-module accumulator for custom `tick_rate_hz`, and priority-bucketed execution phases.
-  * **Concurrency Enforcement:**
-    * Sets `WorldState::set_parallel_execution_active(true)` before dispatching tasks.
-    * Dispatches `thread_safe_tick == true` modules in the same priority bucket to `WorkerThreadPool::get_singleton()->add_native_task()` / `add_native_group_task()`.
-    * Records all `WorkerThreadPool::TaskID` / `GroupID` handles in a `LocalVector` and awaits every single handle via `wait_for_task_completion()` / `wait_for_group_task_completion()` on the main coordination thread before advancing to the next priority bucket.
-    * Guard flag (`thread_local bool in_sim_worker_task`) that prevents nested task waits.
-    * Unlocks `WorldState` structure, commits queued structural mutations, and flushes `EventBus` deferred events on the main thread.
-  * **Deterministic Rewind Ring Buffer:**
-    * Captures compact `.sbsav` binary snapshots in memory every $N$ ticks into a fixed-capacity ring buffer.
-    * Implements `rewind_ticks(int p_ticks)` -> restores `WorldState` + `SimModule` snapshots and emits `world_state_restored` on `EventBus`.
-  * Per-module microsecond tick timing profiler (`get_module_last_tick_usec(StringName)`).
+* **Files to Create (`modules/sandbox_sim/`):**
+  * `config.py`, `SCsub`, `register_types.{h,cpp}`
+  * `sim_module.{h,cpp}` — Abstract `SimModule : public Resource` (`module_id`, `tick_rate_hz`, `priority`, `thread_safe_tick`, `on_init`, `on_tick`, `on_snapshot_write`, `on_snapshot_read`, optional `get_declared_schema()`).
+  * `simulation_server.{h,cpp}` — Thread-safe `RID_Alloc<SimModuleInstance, true>` and `RID_Alloc<SimAgentSoA, true>`:
+    * Dispatches `thread_safe_tick == true` modules across `WorkerThreadPool` by priority bucket; awaits every `TaskID`/`GroupID` before exiting the bucket (Invariant #1); forbids nested waits via `thread_local` guard (Invariant #2); locks SoA container sizing during parallel ticks (Invariant #3); flushes deferred events on the main thread (Invariant #4).
+    * Built-in contiguous **Agent SoA Table** (`pos64`, `vel`, `rot`, `archetype_id`, `state_flags`, `health`, `hydration_tier`, `pin_mask`, `custom_blob`) shared with `HydrationBubble` for high-throughput traffic/crowd simulation.
+    * Ring buffer of compressed `.sbsav` snapshots every $N$ ticks; `sim.rewind <ticks>` restores `WorldState` + `SimModule` blobs, triggers `HydrationBubble::resync_active_actors_from_soa()`, and emits `&"world_state_restored"`.
 
 ---
 
 ### Phase 3: `modules/sandbox_narrative` & Tier 1 `AnimationPlayer` Custom Tracks
-Implements `SandboxActor`, `ActorRegistry`, native `AnimationPlayer` tracks, `SequenceDirector`, and `MissionRunner`.
+Implements `SandboxActor`, `ActorRegistry`, native `AnimationPlayer` tracks, branching `MissionData` / `SequenceData` graphs, `SequenceDirector`, and `MissionRunner`.
 
-#### 3.1 Files to Create (`modules/sandbox_narrative/`)
-* `modules/sandbox_narrative/config.py`, `SCsub`, `register_types.{h,cpp}`
-* `modules/sandbox_narrative/sandbox_actor.{h,cpp}` & `actor_registry.{h,cpp}`
-  * `SandboxActor : public Node` with `actor_id: StringName`, `tags: TypedArray<StringName>`, and signals `control_lock_requested(locked, reason)`, `teleport_requested(target_transform)`, `action_requested(action_id, payload)`, plus helper `request_teleport(Transform3D)` that also optionally calls `reset_physics_interpolation()` on parent `Node3D` when configured.
-  * Auto-registers/unregisters with `ActorRegistry` singleton in `NOTIFICATION_ENTER_TREE` / `NOTIFICATION_EXIT_TREE`.
-  * `ActorRegistry` provides $O(1)$ lookup by `actor_id` (`get_actor(StringName)`) and tag queries (`get_actors_by_tag(StringName)`), plus direct dispatch helpers used by `AnimationMixer` and `CommandBus`.
-* `modules/sandbox_narrative/sandbox_condition.{h,cpp}`
-  * `SandboxCondition : public Resource` with `GDVIRTUAL3RC(bool, _evaluate, WorldState *, StringName, Dictionary)`.
-  * Built-in subclasses: `CondStateEquals`, `CondStateRange`, `CondEventFired`, `CondAll`, `CondAny`.
-* `modules/sandbox_narrative/sequence_action.{h,cpp}` & `sequence_director.{h,cpp}`
-  * `SequenceAction : public Resource` and `SequenceData : public Resource`.
-  * Built-in actions: `ActionPlayAnimation`, `ActionSetState`, `ActionEmitEvent`, `ActionRunCommand`, `ActionLockActor`, `ActionWaitEvent`, `ActionBlendCamera`.
-  * `SequenceDirector : public Node` executing sequential and parallel action blocks driven by `SandboxClock`'s narrative clock and `Tween::tween_await()`.
-* `modules/sandbox_narrative/mission_runner.{h,cpp}`
-  * `ObjectiveData : public Resource`, `MissionData : public Resource`, and `MissionRunner` singleton/node subscribing to `EventBus` and `WorldState` changes, evaluating `SandboxCondition`s, triggering `on_start_sequence` / `on_complete_sequence`, and serializing active/completed progress to `SandboxSerializer`.
-
-#### 3.2 Tier 1 Patches (`scene/resources/animation.{h,cpp}`, `scene/animation/animation_mixer.{h,cpp}`, `editor/animation/animation_track_editor.cpp`)
-* `scene/resources/animation.h` & `scene/resources/animation.cpp`:
-  * Add `TYPE_EVENT_BUS`, `TYPE_WORLD_STATE`, `TYPE_ACTOR_COMMAND` to `Animation::TrackType`.
-  * Add track structs (`EventBusTrack`, `WorldStateTrack`, `ActorCommandTrack`) and key manipulation methods (`event_bus_track_insert_key`, `world_state_track_insert_key`, `world_state_track_interpolate`, `actor_command_track_insert_key`).
-  * Update `Animation::get_cache_type()` so each new track type has a distinct cache offset (`<= 11 < 40`).
-* `scene/animation/animation_mixer.h` & `scene/animation/animation_mixer.cpp`:
-  * Add `TrackCacheEventBus`, `TrackCacheWorldState`, and `TrackCacheActorCommand`.
-  * In `_update_caches()`, bypass `parent->get_node_and_resource()` requirement for the 3 sandbox track types so tracks work globally without requiring a dummy target Node in the scene.
-  * In `_blend_process()` / `_blend_apply()`:
-    * `TYPE_EVENT_BUS`: Fire `EventBus::get_singleton()->emit(event_id, payload)` on discrete keyframes in range.
-    * `TYPE_WORLD_STATE`: Support both discrete setting and continuous timeline blending/interpolation into `WorldState::get_singleton()->set_value(state_key, blended_val)`.
-    * `TYPE_ACTOR_COMMAND`: Dispatch `action_requested` or `control_lock_requested` to `actor_id` via `ActorRegistry::get_singleton()`.
-* `editor/animation/animation_track_editor.cpp`:
-  * Expand `type_icons[9]` in `AnimationTrackEdit::_get_key_type_icon()` to `type_icons[12]`.
-  * Add `"EventBus Track..."`, `"WorldState Track..."`, and `"Actor Command Track..."` to `add_track->get_popup()` in `AnimationTimelineEdit::_notification()`.
-  * Handle the 3 track types in `_add_track()`, `_insert_key_from_track()`, `_confirm_insert()`, `AnimationTrackEdit::draw_key()`, `get_tooltip()`, and `AnimationTrackKeyEdit` (`_set`, `_get`, `_get_property_list`).
+* **Files to Create (`modules/sandbox_narrative/`):**
+  * `config.py`, `SCsub`, `register_types.{h,cpp}`
+  * `sandbox_actor.{h,cpp}` & `actor_registry.{h,cpp}` — `SandboxActor : public Node` (`actor_id`, `tags`, `control_lock_requested`, `teleport_requested`, `action_requested`), auto-registering with `ActorRegistry`.
+  * `sandbox_condition.{h,cpp}` — `SandboxCondition : public Resource` (`evaluate()`) + built-ins: `CondStateEquals`, `CondStateRange`, `CondEventFired`, `CondAll`, `CondAny`, `CondNot` (using schema picker property hints).
+  * `sequence_action.{h,cpp}`, `sequence_data.{h,cpp}`, & `sequence_director.{h,cpp}`:
+    * `SequenceStep` / `SequenceAction` (`step_uuid`, `wait_for_completion`, `next_steps: PackedStringArray`, `branch_true_steps`, `branch_false_steps`).
+    * Built-in actions: `ActionPlayAnimation`, `ActionSetState`, `ActionEmitEvent`, `ActionRunCommand`, `ActionLockActor`, `ActionBranchCondition`, `ActionWaitEvent`, `ActionBlendCamera`.
+    * `SequenceData : public Resource` holding `sequence_id`, `entry_step_uuid`, `steps: TypedArray<SequenceAction>`, and `_editor_graph_meta: Dictionary`.
+    * `SequenceDirector : public Node` executing the step DAG across sequential awaits, parallel forks, join barriers, and conditional branches using `SandboxClock` narrative delta and `Tween::tween_await()`, streaming live step states over `EngineDebugger` (`sandbox:narrative_trace`).
+  * `mission_data.{h,cpp}` & `mission_runner.{h,cpp}`:
+    * `ObjectiveData : public Resource` (`objective_id`, `title`, `required`, `complete_condition`, `fail_condition`).
+    * `MissionTransition : public Resource` (`from_objective_id`, `to_objective_id`, `on_fail: bool`, `condition: Ref<SandboxCondition>`).
+    * `MissionData : public Resource` (`mission_id`, `objectives`, `transitions`, `on_start_sequence`, `on_complete_sequence`, `_editor_graph_meta: Dictionary`).
+    * `MissionRunner` singleton evaluating active mission DAGs on `EventBus` / `WorldState` updates and emitting `sandbox:narrative_trace` debugger packets.
+* **Tier 1 Patches (`scene/resources/animation.{h,cpp}`, `scene/animation/animation_mixer.{h,cpp}`, `editor/animation/animation_track_editor.cpp`):**
+  * Add `TYPE_EVENT_BUS`, `TYPE_WORLD_STATE`, `TYPE_ACTOR_COMMAND` to `Animation::TrackType` and `Animation::get_cache_type()`.
+  * Bypass `parent->get_node_and_resource()` in `AnimationMixer::_update_caches()` for the 3 global track types.
+  * Expand `type_icons[12]` in `AnimationTrackEdit::_get_key_type_icon()`, add menu items to `AnimationTimelineEdit`, and emit schema hint strings (`"sandbox_event_id"`, `"sandbox_world_state_key"`, `"sandbox_actor_id"`) in `AnimationTrackKeyEdit::_get_property_list()`.
 
 ---
 
-### Phase 4: `modules/sandbox_terminal` & Tier 1 `Viewport` Native Terminal Focus
-Implements diegetic 3D monitors with rendering guardrails, 3D-to-2D raycast synthesis, captured-mouse center raycasting, permission enforcement, and native `Viewport` keyboard/scroll focus routing.
+### Phase 4: `modules/sandbox_streaming` (Opt-In Spatial Partitioning, Per-LOD Async Loader, HLOD, & `OriginShifter`)
+Implements open-world streaming, VRAM reclamation, time-sliced activation, HLOD cross-fading, and floating-origin coordinate management.
 
-#### 4.1 Tier 1 Patch (`scene/main/viewport.{h,cpp}`)
-* Modify `scene/main/viewport.h` & `scene/main/viewport.cpp`:
-  * Add `ObjectID terminal_focus_viewport_id` and `Callable terminal_focus_release_callback` on root `Viewport`, with public API `set_terminal_focus_viewport(Viewport *p_subviewport, const Callable &p_release_cb)`, `clear_terminal_focus_viewport()`, `get_terminal_focus_viewport() const`.
-  * At the top of `Viewport::push_input()`: if `terminal_focus_viewport_id.is_valid()` and `this != focused_subviewport`:
-    * If `ev->is_action_pressed("ui_cancel", false, true)`, invoke `clear_terminal_focus_viewport()` (which triggers the release callback), call `set_input_as_handled()`, and return.
-    * If `ev` is `InputEventKey`, `InputEventShortcut`, or `InputEventMouseButton` (scroll wheel), forward `focused_subviewport->push_input(ev, false)`, call `set_input_as_handled()`, and return.
-
-#### 4.2 Files to Create (`modules/sandbox_terminal/`)
-* `modules/sandbox_terminal/config.py`, `SCsub`, `register_types.{h,cpp}`
-* `modules/sandbox_terminal/terminal_parser.{h,cpp}`
-  * Tokenizer/parser handling quoted strings, typed literals (`bool`, `int`, `float`, `String`), autocomplete suggestions from `CommandBus`, and command history ring buffer.
-* `modules/sandbox_terminal/terminal_display_3d.{h,cpp}`
-  * `TerminalDisplay3D : public Node3D` managing:
-    * Internal `SubViewport` (never wrapped in `SubViewportContainer`), strictly enforcing `set_disable_3d(true)`, minimum `256x256` resolution clamping (FSR2 guardrail), configurable `oversampling`, and optional distance/frustum `UPDATE_DISABLED` throttling.
-    * Internal 2D CLI UI (`RichTextLabel` + `LineEdit` with default `FontFile` / `SystemFont` configured with `multichannel_signed_distance_field = true`).
-    * Screen `MeshInstance3D` (`QuadMesh`) with an sRGB-aware CRT/unshaded `ShaderMaterial` (`source_color` uniform binding `ViewportTexture`) and an aligned `Area3D` + `CollisionShape3D` (`BoxShape3D`).
-    * **3D-to-2D Input Synthesis:** Transforms world raycast hit via `quad->get_global_transform().affine_inverse()`, projects to UV `[0, 1]`, scales by `SubViewport::get_size()`, synthesizes `position`, `global_position`, `relative`, and `velocity`, and dispatches via `sub_viewport->push_input()`.
-    * **Captured Mouse Mode Support:** When `Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED`, performs explicit camera-center raycasting from `get_viewport()->get_camera_3d()` at screen center `(viewport_size * 0.5)`.
-    * **Focus Engagement:** Engaging the terminal locks the interacting `SandboxActor` (`control_lock_requested(true, &"terminal")`) and activates `get_viewport()->set_terminal_focus_viewport(sub_viewport, ...)`; pressing `ui_cancel` releases focus and unlocks the actor (`control_lock_requested(false, &"terminal")`).
-    * **Permissions:** Exports `permission_tier` (`GUEST`, `USER`, `ADMIN`, `DEV`) and `allowed_namespaces: TypedArray<StringName>`; forwards validated commands to `CommandBus::get_singleton()->execute(...)`.
+* **Files to Create (`modules/sandbox_streaming/`):**
+  * `config.py`, `SCsub`, `register_types.{h,cpp}`
+  * `world_partition_manifest.{h,cpp}` — `WorldPartitionLayer` (Macro $512\text{ m}$, Meso $128\text{ m}$, Micro $32\text{ m}$, `load_radius`, `evict_radius`) and `WorldPartitionCell` (`cell_id`, `layer`, `grid_coords`, `hlod_impostor_path`, `mid_mesh_path`, `high_scene_path`, `collision_bundle_path`).
+    * Strictly validates all paths on registration: must normalize to `res://` with no `..`, `user://`, or script extensions (returns `ERR_INVALID_DATA` on violation).
+  * `streaming_invoker.{h,cpp}` — `StreamingInvoker : public Node3D` tracking smoothed velocity $\vec{v}$ and lookahead horizon $\Delta t_{\text{lookahead}}$ ($2.0\text{ s}\text{–}4.0\text{ s}$).
+  * `streaming_server.{h,cpp}` — Opt-in singleton (`set_enabled(bool)`):
+    * Evaluates active invokers + cutscene pins against `WorldPartitionGrid`.
+    * Manages the 5-state per-cell machine: `UNLOADED` $\leftrightarrow$ `LOADING_ASYNC` $\leftrightarrow$ `STAGED` $\leftrightarrow$ `ACTIVE_ATTACHED` $\leftrightarrow$ `EVICTING`.
+    * Schedules async loads via `ResourceLoader::load_threaded_request(..., false)` ordered by the priority formula:
+      $$\text{Priority} = w_1 \cdot \frac{1}{\max(d, 1.0)} + w_2 \cdot \max(0, \hat{f} \cdot \hat{d}_{\text{cell}}) + w_3 \cdot \text{PinWeight}$$
+    * **Time-Sliced Main-Thread Activator ($B_{\text{stream}} \le 2.0\text{ ms}$):** Unpacks `STAGED` cells across frames within `budget_usec`: (1) Jolt static collision shapes first, (2) visual `Node3D` sub-batches, (3) dithered HLOD cross-fade (`hlod_fade` instance shader parameter over $0.2\text{ s}\text{–}0.35\text{ s}$), (4) emits `&"stream_cell_activated"`.
+    * **True RAM/VRAM Eviction:** Detaches cell nodes, frees Jolt bodies, drops all `Ref<Resource>` handles so `RenderingServer` frees mesh/texture RIDs, and records sparse cell diffs (`streaming_cell_diffs` bitmasks for destroyed/mutated props).
+    * Registers `CommandBus` commands: `stream.stats`, `stream.budget`, `stream.pin`, `stream.unpin`, `stream.hlod_force`.
+  * `origin_shifter.{h,cpp}` — `OriginShifter` singleton:
+    * Stores 64-bit authoritative `WorldPos64` (`Vector3i` $512\text{ m}$ sector + `Vector3` local offset, or `double[3]`).
+    * When compiled with `precision=single` (`#ifndef REAL_T_IS_DOUBLE`) and the primary invoker drifts beyond $R_{\text{shift}}$ ($2048\text{ m}$), executes an atomic grid-snapped shift $-\Delta \vec{O}$ at the start of the physics tick: translates registered root `Node3D`s, active streamed cells, and `HydrationBubble` Tier 1/2 entities, calls `reset_physics_interpolation()` on all shifted `Node3D`s and `RS::multimesh_instances_reset_physics_interpolation()` on Tier 1 `MultiMesh` RIDs, and emits `&"origin_shifted"`.
+    * Automatically acts as a no-op pass-through when compiled with `precision=double` (`#ifdef REAL_T_IS_DOUBLE`).
 
 ---
 
-### Phase 5: `modules/sandbox_editor` (Godot 4.6+ `EditorDock` & Bidirectional Debugger IPC)
-Implements the editor authoring dock and live runtime telemetry/command bridge.
+### Phase 5: `modules/sandbox_bubble` (Opt-In Simulation-to-Node Actor Hydration Bubble)
+Bridges `SimulationServer` SoA agents with pooled `SceneTree` actors and `MultiMesh` GPU proxies.
 
-#### 5.1 Files to Create (`modules/sandbox_editor/`)
-* `modules/sandbox_editor/config.py`, `SCsub`, `register_types.{h,cpp}`
-  * Runtime telemetry capture (`SandboxRuntimeDebuggerBridge`) initialized under `#ifdef DEBUG_ENABLED` (registers `EngineDebugger::register_message_capture("sandbox", ...)` to execute incoming `sandbox:cmd` on `CommandBus` and streams `sandbox:telemetry` snapshots/events/timings).
-  * Editor classes initialized under `#ifdef TOOLS_ENABLED` at `MODULE_INITIALIZATION_LEVEL_EDITOR`:
-* `modules/sandbox_editor/sandbox_editor_debugger.{h,cpp}`
-  * `SandboxEditorDebuggerPlugin : public EditorDebuggerPlugin` overriding `has_capture("sandbox")`, `capture("sandbox:telemetry", ...)`, and `setup_session()`, plus `send_command(String)` via `EditorDebuggerSession::send_message("sandbox:cmd", [raw_cmd])`.
-* `modules/sandbox_editor/sandbox_editor_dock.{h,cpp}`
-  * `SandboxEditorDock : public EditorDock` configured with `set_title("Sandbox")`, `set_default_slot(EditorDock::DOCK_SLOT_BOTTOM)`, and `set_available_layouts(EditorDock::DOCK_LAYOUT_ALL)`.
-  * Contains a `TabContainer` with three tabs:
-    1. **Asset Browser Tab:** Scans `res://` for `SimModule`, `MissionData`, and `SequenceData` `.tres` resources with quick-create and Inspector selection buttons.
-    2. **Live WorldState & Sim Inspector Tab:** Real-time tree view of `WorldState` channels, active/completed missions, and per-`SimModule` tick duration (`usec/tick`) received via `sandbox:telemetry`.
-    3. **Command Console Tab:** Interactive CLI with autocomplete executing commands against the running game via `sandbox:cmd` (or locally in editor mode).
-* `modules/sandbox_editor/sandbox_editor_plugin.{h,cpp}`
-  * `SandboxEditorPlugin : public EditorPlugin` registering `SandboxEditorDock` via `add_dock()` and `SandboxEditorDebuggerPlugin` via `add_debugger_plugin()`.
+* **Files to Create (`modules/sandbox_bubble/`):**
+  * `config.py`, `SCsub`, `register_types.{h,cpp}`
+  * `hydratable_actor.{h,cpp}` — `HydratableActor : public Node` (`archetype_id`, `hydrate_radius = 140.0`, `dehydrate_radius = 165.0`, `bound_rid`, signals `hydrated(rid, initial_state)` and `dehydrating(rid, out_state)`, `set_pinned(pinned, reason)`).
+  * `actor_node_pool.{h,cpp}` — `ActorNodePool`:
+    * Pre-warms configurable counts of inactive `Node3D` prefabs per `archetype_id` at startup (`PROCESS_MODE_DISABLED`, hidden, detached from Jolt space).
+    * Zero runtime `instantiate()` or `queue_free()` calls during steady-state traversal; supports configurable pool-exhaustion overflow policy (`KEEP_TIER1_PROXY` vs. `RECYCLE_FARTHEST_UNPINNED`).
+  * `hydration_bubble.{h,cpp}` — Opt-in `HydrationBubble` singleton:
+    * Evaluates agent distances against velocity-biased invoker ellipsoids with hysteresis ($R_{\text{in}} < R_{\text{out}}$).
+    * **Tier 0 (Abstract SoA, $d > R_{\text{proxy}}$):** Pure C++ SoA struct ticked in `SimulationServer`.
+    * **Tier 1 (Batched Proxy Ring, $R_{\text{out}} < d \le R_{\text{proxy}}$):** Packs local 32-bit transforms into per-archetype float buffers and uploads directly via `RenderingServer::get_singleton()->multimesh_set_buffer()` and `multimesh_set_visible_instances()`.
+    * **Tier 2 (Hydrated Live Actor, $d \le R_{\text{in}}$):** Time-sliced main-thread hydration/dehydration budget (max $4$ hydrations and $6$ dehydrations or $\le 1.5\text{ ms}$/frame); claims/returns `ActorNodePool` nodes, calls `reset_physics_interpolation()`, performs lossless SoA state round-trip (transform, velocity, health, damage, custom byte blob), and respects `HYDRATION_PIN`.
+    * Implements `flush_active_actors_to_soa()` (for pre-save snapshot flush) and `resync_active_actors_from_soa()` (for `sim.rewind` and save loading).
+    * Registers `CommandBus` commands: `bubble.stats`, `bubble.radius`, `bubble.pin`, `bubble.unpin`.
 
 ---
 
-### Phase 6: Verification Gates & Test Harnesses (§6 Acceptance Criteria)
-Implements automated C++ `doctest` suites and the two domain-agnostic 3D test harness scenes so all 5 acceptance gates in `SPEC.md` §6 can be executed and verified.
+### Phase 6: `modules/sandbox_terminal` & Tier 1 `Viewport` Native Terminal Focus
+Implements diegetic 3D monitors with rendering guardrails, 3D-to-2D raycast synthesis, captured-mouse center raycasting, permission enforcement, and native `Viewport` focus routing.
 
-| Gate | Verification Target | Implementation & Automated Test Artifact |
+* **Tier 1 Patch (`scene/main/viewport.{h,cpp}`):**
+  * Add `terminal_focus_viewport_id` and `terminal_focus_release_callback` on `Viewport` (`set_terminal_focus_viewport`, `clear_terminal_focus_viewport`).
+  * Route keyboard, shortcut, and mouse-wheel events directly into the focused `SubViewport` in `Viewport::push_input()`, releasing focus on `ui_cancel`.
+* **Files to Create (`modules/sandbox_terminal/`):**
+  * `config.py`, `SCsub`, `register_types.{h,cpp}`
+  * `terminal_parser.{h,cpp}` — CLI tokenizer, typed literal parser, history ring buffer, and `CommandBus` autocomplete provider.
+  * `terminal_display_3d.{h,cpp}` — `TerminalDisplay3D : public Node3D`:
+    * Standalone `SubViewport` (no `SubViewportContainer` wrapper), enforcing `disable_3d = true`, minimum $256 \times 256$ resolution guard (FSR2 safety), MSDF font rendering, sRGB-aware CRT/surface shader (`source_color`), and distance/frustum `UPDATE_DISABLED` throttling.
+    * 3D-to-2D raycast coordinate synthesis (`quad.global_transform.affine_inverse()`), explicit camera-center raycasting when `Input::get_mouse_mode() == Input::MOUSE_MODE_CAPTURED`, `SandboxActor` control lock engagement, and per-terminal `PermissionLevel` + `allowed_namespaces` filtering.
+
+---
+
+### Phase 7: `modules/sandbox_editor` (5-Tab `EditorDock`, `GraphEdit` Narrative Canvas, Schema ID Pickers, HLOD Baker, & Export Plugin)
+Implements the complete visual authoring, schema validation, baking, and live debugging suite.
+
+* **Files to Create (`modules/sandbox_editor/`):**
+  * `config.py`, `SCsub`, `register_types.{h,cpp}`
+  * `sandbox_editor_dock.{h,cpp}` — `SandboxEditorDock : public EditorDock` hosting 5 tabs:
+    1. **Asset Browser Tab:** Scans `res://` for `SimModule`, `MissionData`, `SequenceData`, `SandboxSchemaRegistry`, and `WorldPartitionManifest` `.tres` assets.
+    2. **Narrative Flow Graph Tab (`sandbox_narrative_graph_editor.{h,cpp}`):**
+       * Native `GraphEdit` canvas directly bound to the inspected `MissionData` or `SequenceData` `.tres` resource.
+       * Enforces typed ports via `add_valid_connection_type()`: Port `0` (Execution Flow — White/Blue), Port `1` (Condition Logic — Amber), Port `2` (Sequence Reference — Purple).
+       * Custom `GraphNode`s: `MissionEntryNode`, `ObjectiveNode`, `ConditionNode`, `CombinatorNode` (`ALL`/`ANY`/`NOT`), auto-discovered `SequenceActionNode`s (solid blocking wire vs. dashed parallel wire), `WaitEventNode`, `BranchNode`, and `CommentFrameNode` (`GraphFrame`).
+       * Full `EditorUndoRedoManager` integration, deterministic `_editor_graph_meta` layout dictionary sorted by UUID, **Auto-Arrange (Layered DAG)** button (`GraphEdit::arrange_nodes()`), and live runtime execution highlighting (`green` active, `amber` awaiting, `cyan` completed, `red` failed) driven by `sandbox:narrative_trace`.
+    3. **Live WorldState & Streaming Inspector Tab:** Displays real-time SoA variables, active missions, `SimModule` tick timings (`usec/tick`), loaded cell heatmaps, VRAM residency, and `HydrationBubble` Tier 0/1/2 counts.
+    4. **HLOD Baker Utility Tab (`sandbox_hlod_baker.{h,cpp}`):** Partitions tagged static scene geometry into `WorldPartitionCell` `.scn` bundles and bakes merged static low-poly HLOD proxy meshes + albedo/normal/ORM texture atlases (reducing per-cell static draw calls to 1).
+    5. **Command Console Tab:** Interactive CLI with `CommandBus` autocomplete executing commands over `sandbox:cmd`.
+  * `sandbox_inspector_plugin.{h,cpp}` — `SandboxInspectorPlugin : public EditorInspectorPlugin` & `SandboxIdPickerProperty : public EditorProperty`:
+    * Intercepts `"sandbox_world_state_key[:type]"`, `"sandbox_event_id"`, `"sandbox_actor_id"`, and `"sandbox_marker_id"` across `Resource`, `Node`, and `AnimationTrackKeyEdit`.
+    * Renders searchable fuzzy dropdown (`PopupPanel` + `LineEdit` + namespace-grouped `Tree` with `Variant.Type` badges and tooltips), inline validation badges (missing key, `deprecated`, or type mismatch), **"Add to Schema Registry"** button in Permissive mode, and inline **Pick from 3D Scene (Eyedropper)** + **Focus in 3D Viewport** buttons for actor/marker IDs.
+  * `sandbox_export_plugin.{h,cpp}` — `SandboxExportPlugin : public EditorExportPlugin`:
+    * In `_customize_resource()`, duplicates `MissionData` and `SequenceData` resources and strips `_editor_graph_meta` on release exports.
+    * In `_export_begin()`, when `GLOBAL_GET("sandbox/schema/strict_mode")` is enabled, audits all `MissionData`, `SequenceData`, and `Animation` `.tres` files against `SandboxSchemaRegistry` and aborts export if broken references exist.
+  * `sandbox_editor_debugger.{h,cpp}` — `SandboxEditorDebuggerPlugin : public EditorDebuggerPlugin` paired with runtime `EngineDebugger` capture (`sandbox:cmd`, `sandbox:telemetry`, `sandbox:narrative_trace`).
+  * `sandbox_editor_plugin.{h,cpp}` — Registers the 5-tab `EditorDock`, `SandboxInspectorPlugin`, `SandboxExportPlugin`, `SandboxEditorDebuggerPlugin`, and 3D viewport eyedropper input forwarding.
+
+---
+
+### Phase 8: Verification Gates & Test Harnesses (All 8 Acceptance Criteria in §6)
+Implements automated C++ `doctest` suites under `modules/sandbox_*/tests/` and test harness scenes verifying all 8 gates:
+
+| Gate | Verification Target | Automated Test Suite & Acceptance Criteria Checked |
 | :--- | :--- | :--- |
-| **Gate 1** | **Multi-Clock Isolation Test** | `modules/sandbox_core/tests/test_sandbox_clock.h`: Verifies `sim_clock` at `50x` and `0x` (paused) leaves physics step delta, `AudioServer::get_playback_speed_scale()` (`1.0`), and narrative/UI clock delta invariant, and bounds frame step time `< 16.6 ms`. |
-| **Gate 2** | **Thread Safety & Leak Audit** | `modules/sandbox_sim/tests/test_simulation_server.h`: Executes 10,000 consecutive `SimulationServer::step()` ticks across 8 concurrent `SimModule` instances on `WorkerThreadPool` verifying zero data races, zero `ERR_BUSY` aborts, zero leaked task handles, and deferred `EventBus` main-thread delivery. |
-| **Gate 3** | **Domain Agnosticism Proof** | `modules/sandbox_narrative/tests/test_domain_agnosticism.h` + test scenes: Mounts identical `MissionData`, `Animation` (with `TYPE_EVENT_BUS`, `TYPE_WORLD_STATE`, `TYPE_ACTOR_COMMAND`), and `TerminalDisplay3D` onto (a) a 1st-person `CharacterBody3D` rig and (b) an RTS top-down camera rig via `SandboxActor` without engine changes. |
-| **Gate 4** | **3D Terminal Legibility & Performance Gate** | `modules/sandbox_terminal/tests/test_terminal_display_3d.h`: Spawns 4 simultaneous `TerminalDisplay3D` nodes in a 3D scene; verifies `disable_3d == true`, MSDF font flag, min 256×256 resolution guard, captured-mouse center raycast synthesis, `SandboxActor` control lock, and `ui_cancel` native `Viewport` focus release. |
-| **Gate 5** | **Security Verification** | `modules/sandbox_core/tests/test_sandbox_security.h`: (a) Feeds crafted save payloads with embedded `Object`/script bytes into `SandboxSerializer` and confirms rejection with `ERR_INVALID_DATA`; (b) Connects to `SandboxDebugServer` with missing token, mismatched `Origin`, and `Host: 0.0.0.0` and confirms `HTTP/1.1 403 Forbidden`; (c) Verifies `#ifndef DEBUG_ENABLED` strips debug listeners and rejects `PERMISSION_DEV` commands with `ERR_UNAUTHORIZED`. |
+| **Gate 1** | **Multi-Clock Isolation Test** | `modules/sandbox_core/tests/test_sandbox_clock.h`: `sim_clock` at $50\times$ and $0\times$ (paused); verifies Jolt 60 Hz stability, audio playback scale $1.0$, and terminal latency $< 16.6\text{ ms}$. |
+| **Gate 2** | **Thread Safety & Leak Audit** | `modules/sandbox_sim/tests/test_simulation_server.h`: $10,000$ consecutive `SimulationServer` ticks across $8$ concurrent `SimModule`s on `WorkerThreadPool` with zero data races, zero `ERR_BUSY` aborts, and zero leaked task handles. |
+| **Gate 3** | **Domain Agnosticism Proof** | `modules/sandbox_narrative/tests/test_domain_agnosticism.h`: Mounts identical `MissionData`, custom-track `Animation`, and `TerminalDisplay3D` onto (a) a 1st-person `CharacterBody3D` rig and (b) an RTS top-down camera rig via `SandboxActor`. |
+| **Gate 4** | **3D Terminal Legibility & Performance Gate** | `modules/sandbox_terminal/tests/test_terminal_display_3d.h`: $4$ simultaneous `TerminalDisplay3D` monitors; verifies MSDF font settings, `disable_3d = true`, min $256 \times 256$ FSR2 guard, captured-mouse center raycast, and `ui_cancel` focus release. |
+| **Gate 5** | **Security Verification** | `modules/sandbox_core/tests/test_sandbox_security.h`: Rejects crafted `Object`-payload save files (`ERR_INVALID_DATA`); rejects `WorldPartitionManifest` paths with `../` or `user://` scripts; terminates unauthenticated/mismatched-`Origin` WebSocket handshakes with HTTP `403 Forbidden`; verifies `#ifndef DEBUG_ENABLED` strips debug sockets and `DEV` commands. |
+| **Gate 6** | **High-Speed Open-World Streaming & Floating Origin Gate** | `modules/sandbox_streaming/tests/test_streaming_server.h`: Traverses a $16\text{ km} \times 16\text{ km}$ partitioned world at $90\text{ m/s}$ across $\ge 4$ `OriginShifter` thresholds ($R_{\text{shift}} = 2048\text{ m}$); verifies activation $\le 2.0\text{ ms/frame}$, VRAM reclamation on cell eviction, gapless HLOD cross-fades, and `reset_physics_interpolation()` on origin shifts. |
+| **Gate 7** | **Hydration Bubble SoA-to-Node Stress Gate** | `modules/sandbox_bubble/tests/test_hydration_bubble.h`: Simulates $2,000$ SoA agents while moving an invoker through a dense district; verifies $100\%$ `ActorNodePool` reuse (zero runtime `instantiate()`/`queue_free()`), zero $R_{\text{in}}/R_{\text{out}}$ boundary oscillation, intact state round-trip (damage, health, velocity, `HYDRATION_PIN`) across $500$ cycles, and lossless save/load after pre-save hydration flush. |
+| **Gate 8** | **Visual Authoring & Schema Validation Gate** | `modules/sandbox_editor/tests/test_sandbox_editor.h`: Authors a $15$-node branching `MissionData` + `SequenceData` graph via `GraphEdit` (`CondAll`/`CondAny`/`CondNot`, parallel `SequenceAction` forks, fail transitions); verifies `EditorUndoRedoManager` rollback, `_editor_graph_meta` stripping on release export, live `sandbox:narrative_trace` highlighting, `SandboxIdPickerProperty` fuzzy search/badges, strict-mode export gate failure on broken keys, and 3D eyedropper picking. |
