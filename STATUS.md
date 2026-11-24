@@ -139,6 +139,7 @@ The in-world console routes typed commands through `CommandBus` using its own pe
 - **2026-11-23** Completed Phase 7 and Gate 8. The Windows editor passed the graph, schema, debugger, HLOD and release-export checks and the full headless suite.
 
 - **2026-11-23** Completed Phase 8. The rendered multi-clock test, unsuppressed Linux sanitizer runs, and first-person and RTS editor and release games closed Gates 1–3. The Windows full suite passed 1,496 cases. All eight gates have recorded acceptance evidence.
+- **2026-11-24** Implemented all 8 UX/UI polish improvements across `modules/sandbox_editor`: (1) toggle state & armed tooltip feedback for the 3D Eyedropper, (2) auto-selection & Up/Down/Enter keyboard navigation in `SandboxIdPickerProperty`, (3) `focus_exited` title commit on `GraphFrame`, (4) Undo/Redo layout persistence for `Auto-Arrange (Layered DAG)`, (5) right-click canvas node palette (`popup_request`) and empty-state prompt on `SandboxNarrativeGraphEditor`, (6) search filter, type dropdown, and editor theme icons in the `Assets` tab, (7) Up/Down command history & autocomplete navigation in the `Console` tab, and (8) `EditorFileDialog` directory browser button in `SandboxHLODBaker`. Verified with 10 `[SandboxEditor]` doctest cases (172 assertions) and all 104 native Gate 8 editor checks (`55` graph, `34` picker, `15` bridge).
 
 <!-- verification-evidence:start -->
 ## Phase 4 verification evidence

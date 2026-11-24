@@ -194,6 +194,7 @@ void SandboxIdPickerProperty::_filter(const String &p_text) {
 	choices->clear();
 	TreeItem *root = choices->create_item();
 	HashMap<String, TreeItem *> groups;
+	TreeItem *first_leaf = nullptr;
 	for (const String &id : hint.search(schema, p_text)) {
 		TreeItem *parent = root;
 		PackedStringArray parts = id.split(".");
@@ -224,10 +225,56 @@ void SandboxIdPickerProperty::_filter(const String &p_text) {
 		item->set_text(1, Variant::get_type_name(type));
 		item->set_selectable(1, false);
 		item->set_tooltip_text(0, (id + "\n" + String(desc.get("description", "")) + "\n" + validation_message(hint.validate(schema, id))).strip_edges());
+		if (!first_leaf) {
+			first_leaf = item;
+		}
+	}
+	if (first_leaf) {
+		first_leaf->select(0);
+		choices->scroll_to_item(first_leaf);
 	}
 	status->set_text("");
 	const bool strict = GLOBAL_GET("sandbox/schema/strict_mode");
 	add->set_visible(!strict && !p_text.strip_edges().is_empty() && hint.validate(schema, p_text.strip_edges()) == SandboxSchemaRegistry::VALIDATION_MISSING_KEY);
+}
+
+static void collect_leaves(TreeItem *p_item, LocalVector<TreeItem *> &r_leaves) {
+	if (!p_item) {
+		return;
+	}
+	if (p_item->get_metadata(0).get_type() == Variant::STRING) {
+		r_leaves.push_back(p_item);
+	}
+	for (TreeItem *child = p_item->get_first_child(); child; child = child->get_next()) {
+		collect_leaves(child, r_leaves);
+	}
+}
+
+void SandboxIdPickerProperty::_filter_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> key = p_event;
+	if (key.is_null() || !key->is_pressed() || key->is_command_or_control_pressed() || key->is_alt_pressed()) {
+		return;
+	}
+	if (key->get_keycode() != Key::DOWN && key->get_keycode() != Key::UP) {
+		return;
+	}
+	LocalVector<TreeItem *> leaves;
+	collect_leaves(choices->get_root(), leaves);
+	if (leaves.is_empty()) {
+		return;
+	}
+	TreeItem *current_selected = choices->get_selected();
+	int idx = 0;
+	for (uint32_t i = 0; i < leaves.size(); i++) {
+		if (leaves[i] == current_selected) {
+			idx = int(i) + (key->get_keycode() == Key::DOWN ? 1 : -1);
+			break;
+		}
+	}
+	idx = CLAMP(idx, 0, int(leaves.size()) - 1);
+	leaves[idx]->select(0);
+	choices->scroll_to_item(leaves[idx]);
+	filter->accept_event();
 }
 
 void SandboxIdPickerProperty::_choose() {
@@ -241,8 +288,15 @@ void SandboxIdPickerProperty::_submit(const String &p_id) {
 	if (is_read_only() || !get_edited_object()) {
 		return;
 	}
-	const String id = p_id.strip_edges();
+	String id = p_id.strip_edges();
 	auto result = hint.validate(schema, id);
+	if (result == SandboxSchemaRegistry::VALIDATION_MISSING_KEY) {
+		TreeItem *item = choices->get_selected();
+		if (item && item->get_metadata(0).get_type() == Variant::STRING && id.is_subsequence_ofn(String(item->get_metadata(0)))) {
+			id = item->get_metadata(0);
+			result = hint.validate(schema, id);
+		}
+	}
 	if (bool(GLOBAL_GET("sandbox/schema/strict_mode")) && result != SandboxSchemaRegistry::VALIDATION_OK && result != SandboxSchemaRegistry::VALIDATION_DEPRECATED) {
 		status->set_text(validation_message(result));
 		return;
@@ -402,8 +456,32 @@ bool SandboxIdPickerProperty::pick_at(Node *p_root, Camera3D *p_camera, const Po
 	return true;
 }
 
+void SandboxIdPickerProperty::set_armed(bool p_armed) {
+	if (pick) {
+		pick->set_pressed_no_signal(p_armed);
+		pick->set_tooltip_text(p_armed ? TTR("Click a target origin in the 3D viewport to pick (Esc to cancel).") : TTR("Pick the actor or marker at its origin in the 3D viewport."));
+	}
+}
+
+bool SandboxIdPickerProperty::is_armed() const {
+	return pick && pick->is_pressed();
+}
+
+void SandboxInspectorPlugin::disarm_picker() {
+	if (SandboxIdPickerProperty *previous = ObjectDB::get_instance<SandboxIdPickerProperty>(armed_picker)) {
+		previous->set_armed(false);
+	}
+	armed_picker = ObjectID();
+}
+
 void SandboxInspectorPlugin::arm_picker(ObjectID p_picker) {
+	if (armed_picker.is_valid() && armed_picker != p_picker) {
+		disarm_picker();
+	}
 	armed_picker = p_picker;
+	if (SandboxIdPickerProperty *picker = ObjectDB::get_instance<SandboxIdPickerProperty>(armed_picker)) {
+		picker->set_armed(true);
+	}
 	if (Node3DEditor::get_singleton()) {
 		Node3DEditor::get_singleton()->make_visible();
 	}
@@ -412,18 +490,18 @@ void SandboxInspectorPlugin::arm_picker(ObjectID p_picker) {
 bool SandboxInspectorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	SandboxIdPickerProperty *picker = ObjectDB::get_instance<SandboxIdPickerProperty>(armed_picker);
 	if (!picker || !picker->is_visible_in_tree() || picker->is_read_only()) {
-		armed_picker = ObjectID();
+		disarm_picker();
 		return false;
 	}
 	if (p_event->is_action_pressed(SNAME("ui_cancel"))) {
-		armed_picker = ObjectID();
+		disarm_picker();
 		return true;
 	}
 	Ref<InputEventMouseButton> mouse = p_event;
 	if (mouse.is_null() || !mouse->is_pressed() || mouse->get_button_index() != MouseButton::LEFT) {
 		return false;
 	}
-	armed_picker = ObjectID();
+	disarm_picker();
 	picker->pick_at(edited_root(), p_camera, mouse->get_position());
 	return true;
 }
@@ -432,6 +510,7 @@ void SandboxIdPickerProperty::_set_read_only(bool p_read_only) {
 	field->set_disabled(p_read_only);
 	pick->set_disabled(p_read_only);
 	if (p_read_only) {
+		set_armed(false);
 		popup->hide();
 	}
 }
@@ -464,6 +543,7 @@ SandboxIdPickerProperty::SandboxIdPickerProperty() {
 	field->connect(SceneStringName(pressed), callable_mp(this, &SandboxIdPickerProperty::_open));
 	pick = memnew(Button);
 	row->add_child(pick);
+	pick->set_toggle_mode(true);
 	pick->set_tooltip_text(TTR("Pick the actor or marker at its origin in the 3D viewport."));
 	focus = memnew(Button);
 	row->add_child(focus);
@@ -479,6 +559,7 @@ SandboxIdPickerProperty::SandboxIdPickerProperty() {
 	column->add_child(filter);
 	filter->connect(SceneStringName(text_changed), callable_mp(this, &SandboxIdPickerProperty::_filter));
 	filter->connect(SceneStringName(text_submitted), callable_mp(this, &SandboxIdPickerProperty::_submit));
+	filter->connect(SceneStringName(gui_input), callable_mp(this, &SandboxIdPickerProperty::_filter_input));
 	choices = memnew(Tree);
 	column->add_child(choices);
 	choices->set_hide_root(true);

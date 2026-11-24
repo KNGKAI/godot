@@ -5,12 +5,15 @@
 #include "core/variant/typed_array.h"
 #include "scene/gui/box_container.h"
 
+class Button;
+class FileDialog;
 class GraphEdit;
 class GraphElement;
 class GraphFrame;
 class GraphNode;
+class Label;
+class LineEdit;
 class MenuButton;
-class FileDialog;
 class UndoRedo;
 
 class SandboxNarrativeGraphEditor : public VBoxContainer {
@@ -23,6 +26,8 @@ class SandboxNarrativeGraphEditor : public VBoxContainer {
 	Ref<Resource> edited;
 	GraphEdit *canvas = nullptr;
 	MenuButton *palette = nullptr;
+	Button *arrange_button = nullptr;
+	Label *empty_prompt = nullptr;
 	FileDialog *sequence_dialog = nullptr;
 	HashMap<StringName, Ref<Resource>> resources;
 	HashMap<ObjectID, StringName> node_keys;
@@ -30,12 +35,15 @@ class SandboxNarrativeGraphEditor : public VBoxContainer {
 	Dictionary traces;
 	bool refresh_pending = false;
 	bool editing_field = false;
+	bool has_popup_position = false;
+	Vector2 popup_position;
 	UndoRedo *standalone_history = nullptr;
 
 	void queue_refresh();
 	void refresh();
 	void configure_palette();
 	void palette_selected(int p_index);
+	void popup_palette(const Vector2 &p_position);
 	void load_sequence(const String &p_path);
 	Vector2 insertion_position() const;
 	void add_resource(const Ref<Resource> &p_node, const Vector2 &p_position);
@@ -50,8 +58,10 @@ class SandboxNarrativeGraphEditor : public VBoxContainer {
 	void change_link(Dictionary &r_changes, const StringName &p_from, int p_output, const StringName &p_to, int p_input, bool p_connect);
 	void remove_nodes(const TypedArray<StringName> &p_nodes);
 	void save_layout();
+	void arrange_and_save();
 	void attach_nodes(const TypedArray<StringName> &p_names, const StringName &p_frame);
 	void rename_frame(const String &p_value, const StringName &p_key);
+	void commit_frame_title(LineEdit *p_title, const StringName &p_key);
 	void resize_frame(const Vector2 &p_size, GraphFrame *p_frame);
 	void update_trace();
 
@@ -62,6 +72,7 @@ public:
 	void edit(const Ref<Resource> &p_resource);
 	Ref<Resource> get_edited_resource() const { return edited; }
 	GraphEdit *get_graph_edit() const { return canvas; }
+	Label *get_empty_prompt() const { return empty_prompt; }
 	void apply_trace(const Array &p_trace);
 	void clear_trace();
 	StringName add_graph_node(const StringName &p_class, const Vector2 &p_position);

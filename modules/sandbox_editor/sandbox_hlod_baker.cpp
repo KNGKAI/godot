@@ -40,6 +40,7 @@
 #include "core/string/translation.h"
 #include "editor/editor_interface.h"
 #include "editor/file_system/editor_file_system.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -528,6 +529,24 @@ Error SandboxHLODBaker::bake_scene(Node *p_root, const String &p_directory, cons
 	return OK;
 }
 
+void SandboxHLODBaker::_browse_output_directory() {
+	const String current = output_directory->get_text().strip_edges();
+	if (current.begins_with("res://")) {
+		dir_dialog->set_current_dir(current);
+	}
+	dir_dialog->popup_centered_ratio(0.6);
+}
+
+void SandboxHLODBaker::_select_output_directory(const String &p_dir) {
+	output_directory->set_text(p_dir);
+}
+
+void SandboxHLODBaker::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED && browse_directory) {
+		browse_directory->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
+	}
+}
+
 void SandboxHLODBaker::_bake_edited_scene() {
 	String path;
 	String message;
@@ -554,9 +573,20 @@ SandboxHLODBaker::SandboxHLODBaker() {
 	tile_size->set_value(256);
 	tile_size->set_suffix(TTR("px"));
 	add_margin_child(TTR("Maximum material tile size"), tile_size);
+	HBoxContainer *dir_row = memnew(HBoxContainer);
 	output_directory = memnew(LineEdit);
 	output_directory->set_text("res://sandbox_cells");
-	add_margin_child(TTR("Output directory"), output_directory);
+	output_directory->set_h_size_flags(SIZE_EXPAND_FILL);
+	dir_row->add_child(output_directory);
+	browse_directory = memnew(Button);
+	browse_directory->set_tooltip_text(TTR("Select output directory inside res://."));
+	browse_directory->connect(SceneStringName(pressed), callable_mp(this, &SandboxHLODBaker::_browse_output_directory));
+	dir_row->add_child(browse_directory);
+	add_margin_child(TTR("Output directory"), dir_row);
+	dir_dialog = memnew(EditorFileDialog);
+	dir_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
+	dir_dialog->connect("dir_selected", callable_mp(this, &SandboxHLODBaker::_select_output_directory));
+	add_child(dir_dialog);
 	Button *bake = memnew(Button);
 	bake->set_text(TTR("Bake Edited Scene"));
 	bake->connect(SceneStringName(pressed), callable_mp(this, &SandboxHLODBaker::_bake_edited_scene));

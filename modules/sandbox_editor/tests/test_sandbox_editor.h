@@ -2,8 +2,12 @@
 
 #include "core/object/message_queue.h"
 #include "core/object/undo_redo.h"
+#include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/graph_frame.h"
 #include "scene/gui/graph_node.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "tests/test_macros.h"
@@ -134,9 +138,12 @@ TEST_CASE("[SceneTree][SandboxEditor][Gate8] Mission canvas authors a branching 
 
 TEST_CASE("[SceneTree][SandboxEditor][Gate8] Sequence canvas authors a parallel fork, guarded alternatives and frame placement") {
 	CanvasFixture graph;
+	REQUIRE(graph.editor->get_empty_prompt() != nullptr);
+	CHECK(graph.editor->get_empty_prompt()->is_visible());
 	Ref<SequenceData> sequence;
 	sequence.instantiate();
 	graph.editor->edit(sequence);
+	CHECK_FALSE(graph.editor->get_empty_prompt()->is_visible());
 	StringName fork = graph.add("SequenceAction");
 	StringName wait = graph.add("ActionWaitEvent");
 	StringName branch = graph.add("ActionBranchCondition");
@@ -144,6 +151,14 @@ TEST_CASE("[SceneTree][SandboxEditor][Gate8] Sequence canvas authors a parallel 
 	StringName yes = graph.add("ActionSetState");
 	StringName no = graph.add("ActionEmitEvent");
 	StringName frame = graph.add("GraphFrame");
+	GraphFrame *frame_node = Object::cast_to<GraphFrame>(graph.canvas->get_node(NodePath(frame)));
+	REQUIRE(frame_node != nullptr);
+	LineEdit *frame_title = Object::cast_to<LineEdit>(frame_node->find_children("*", "LineEdit", true, false)[0]);
+	REQUIRE(frame_title != nullptr);
+	frame_title->set_text("Phase 1 Beat");
+	frame_title->emit_signal(SceneStringName(focus_exited));
+	MessageQueue::get_singleton()->flush();
+	CHECK(String(Dictionary(sequence->get_editor_graph_meta()[frame])["title"]) == "Phase 1 Beat");
 	graph.link(fork, 0, wait, 0);
 	graph.link(fork, 0, branch, 0);
 	graph.link(guard, 0, branch, 1);

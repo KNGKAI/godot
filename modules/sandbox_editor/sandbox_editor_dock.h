@@ -20,6 +20,8 @@ class SandboxEditorDock : public EditorDock {
 	GDCLASS(SandboxEditorDock, EditorDock);
 
 	TabContainer *tabs = nullptr;
+	LineEdit *asset_filter = nullptr;
+	OptionButton *asset_type_filter = nullptr;
 	ItemList *assets = nullptr;
 	EditorFileDialog *asset_dialog = nullptr;
 	StringName new_asset_type;
@@ -32,11 +34,16 @@ class SandboxEditorDock : public EditorDock {
 	LineEdit *command = nullptr;
 	ItemList *suggestions = nullptr;
 	RichTextLabel *output = nullptr;
+	Vector<String> command_history;
+	int history_offset = 0;
+	String command_draft;
 	Ref<SandboxEditorDebuggerPlugin> bridge;
 	double until_refresh = 0;
 	int session = -1;
 	void _scan(EditorFileSystemDirectory *p_dir);
 	void _refresh_assets();
+	void _filter_assets_changed(const String &p_text);
+	void _filter_type_changed(int p_idx);
 	void _open_asset(int p_idx);
 	void _choose_asset_path(int p_type);
 	void _create_asset(const String &p_path);

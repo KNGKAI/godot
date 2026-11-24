@@ -10,6 +10,7 @@
 #include "core/object/class_db.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/window_wrapper.h"
@@ -33,15 +34,26 @@ void SandboxEditorDock::_scan(EditorFileSystemDirectory *p_dir) {
 	if (!p_dir) {
 		return;
 	}
+	const String query = asset_filter ? asset_filter->get_text().strip_edges() : String();
+	const int type_idx = asset_type_filter ? asset_type_filter->get_selected() : 0;
 	for (int i = 0; i < p_dir->get_file_count(); i++) {
 		const String path = p_dir->get_file_path(i);
 		if (path.get_extension().to_lower() != "tres") {
 			continue;
 		}
 		const StringName type = p_dir->get_file_type(i);
-		for (const char *base : asset_types) {
+		for (int t = 0; t < int(std::size(asset_types)); t++) {
+			const char *base = asset_types[t];
+			if (type_idx > 0 && type_idx - 1 != t) {
+				continue;
+			}
 			if (ClassDB::is_parent_class(type, base)) {
-				int item = assets->add_item(path.trim_prefix("res://"));
+				const String label = path.trim_prefix("res://");
+				if (!query.is_empty() && !query.is_subsequence_ofn(label) && !query.is_subsequence_ofn(String(type))) {
+					break;
+				}
+				Ref<Texture2D> icon = has_theme_icon(type, EditorStringName(EditorIcons)) ? get_editor_theme_icon(type) : get_editor_theme_icon(SNAME("Object"));
+				int item = assets->add_item(label, icon);
 				assets->set_item_metadata(item, path);
 				assets->set_item_tooltip(item, String(type) + "\n" + path);
 				break;
@@ -55,7 +67,17 @@ void SandboxEditorDock::_scan(EditorFileSystemDirectory *p_dir) {
 
 void SandboxEditorDock::_refresh_assets() {
 	assets->clear();
-	_scan(EditorFileSystem::get_singleton()->get_filesystem());
+	if (EditorFileSystem::get_singleton()) {
+		_scan(EditorFileSystem::get_singleton()->get_filesystem());
+	}
+}
+
+void SandboxEditorDock::_filter_assets_changed(const String &p_text) {
+	_refresh_assets();
+}
+
+void SandboxEditorDock::_filter_type_changed(int p_idx) {
+	_refresh_assets();
 }
 
 void SandboxEditorDock::_open_asset(int p_idx) {
@@ -172,6 +194,9 @@ void SandboxEditorDock::_packet(const String &p_message, const Array &p_data, in
 		for (const String &match : matches) {
 			suggestions->add_item(match);
 		}
+		if (suggestions->get_item_count() > 0) {
+			suggestions->select(0);
+		}
 	}
 }
 
@@ -248,13 +273,23 @@ void SandboxEditorDock::_display_heatmap(int p_idx) {
 }
 
 void SandboxEditorDock::_submit(const String &p_command) {
-	if (p_command.strip_edges().is_empty()) {
+	const String trimmed = p_command.strip_edges();
+	if (trimmed.is_empty()) {
 		return;
 	}
+	if (command_history.is_empty() || command_history[command_history.size() - 1] != p_command) {
+		command_history.push_back(p_command);
+		if (command_history.size() > 64) {
+			command_history.remove_at(0);
+		}
+	}
+	history_offset = 0;
+	command_draft = String();
 	if (bridge.is_valid() && bridge->send(session, "cmd", { p_command })) {
 		output->add_text("> " + p_command);
 		output->add_newline();
 		command->clear();
+		suggestions->clear();
 	}
 }
 
@@ -266,6 +301,9 @@ void SandboxEditorDock::_complete(const String &p_prefix) {
 }
 
 void SandboxEditorDock::_accept_suggestion(int p_idx) {
+	if (p_idx < 0 || p_idx >= suggestions->get_item_count()) {
+		return;
+	}
 	command->set_text(suggestions->get_item_text(p_idx) + " ");
 	command->set_caret_column(command->get_text().length());
 	command->grab_focus();
@@ -274,9 +312,35 @@ void SandboxEditorDock::_accept_suggestion(int p_idx) {
 
 void SandboxEditorDock::_command_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
-	if (key.is_valid() && key->is_pressed() && key->get_keycode() == Key::TAB && suggestions->get_item_count()) {
-		_accept_suggestion(0);
+	if (key.is_null() || !key->is_pressed() || key->is_command_or_control_pressed() || key->is_alt_pressed()) {
+		return;
+	}
+	if (key->get_keycode() == Key::TAB && suggestions->get_item_count() > 0) {
+		Vector<int> sel = suggestions->get_selected_items();
+		_accept_suggestion(sel.is_empty() ? 0 : sel[0]);
 		command->accept_event();
+	} else if (key->get_keycode() == Key::DOWN || key->get_keycode() == Key::UP) {
+		if (suggestions->get_item_count() > 0) {
+			Vector<int> sel = suggestions->get_selected_items();
+			int current = sel.is_empty() ? 0 : sel[0];
+			int next = CLAMP(current + (key->get_keycode() == Key::DOWN ? 1 : -1), 0, suggestions->get_item_count() - 1);
+			suggestions->select(next);
+			suggestions->ensure_current_is_visible();
+			command->accept_event();
+		} else if (!command_history.is_empty()) {
+			if (key->get_keycode() == Key::UP) {
+				if (history_offset == 0) {
+					command_draft = command->get_text();
+				}
+				history_offset = MIN(history_offset + 1, int(command_history.size()));
+			} else {
+				history_offset = MAX(history_offset - 1, 0);
+			}
+			const String entry = history_offset == 0 ? command_draft : command_history[command_history.size() - history_offset];
+			command->set_text(entry);
+			command->set_caret_column(entry.length());
+			command->accept_event();
+		}
 	}
 }
 
@@ -321,14 +385,29 @@ SandboxEditorDock::SandboxEditorDock() {
 	VBoxContainer *browser = memnew(VBoxContainer);
 	tabs->add_child(browser);
 	tabs->set_tab_title(0, TTR("Assets"));
+	HBoxContainer *asset_bar = memnew(HBoxContainer);
+	browser->add_child(asset_bar);
 	MenuButton *create = memnew(MenuButton);
 	create->set_text(TTR("New Resource"));
 	create->set_h_size_flags(SIZE_SHRINK_BEGIN);
-	browser->add_child(create);
+	asset_bar->add_child(create);
 	for (const char *type : asset_types) {
 		create->get_popup()->add_item(type);
 	}
 	create->get_popup()->connect("index_pressed", callable_mp(this, &SandboxEditorDock::_choose_asset_path));
+	asset_filter = memnew(LineEdit);
+	asset_filter->set_placeholder(TTR("Filter assets..."));
+	asset_filter->set_clear_button_enabled(true);
+	asset_filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	asset_bar->add_child(asset_filter);
+	asset_filter->connect(SceneStringName(text_changed), callable_mp(this, &SandboxEditorDock::_filter_assets_changed));
+	asset_type_filter = memnew(OptionButton);
+	asset_type_filter->add_item(TTR("All Types"));
+	for (const char *type : asset_types) {
+		asset_type_filter->add_item(type);
+	}
+	asset_bar->add_child(asset_type_filter);
+	asset_type_filter->connect(SceneStringName(item_selected), callable_mp(this, &SandboxEditorDock::_filter_type_changed));
 	asset_dialog = memnew(EditorFileDialog);
 	asset_dialog->set_file_mode(FileDialog::FILE_MODE_SAVE_FILE);
 	asset_dialog->add_filter("*.tres", TTR("Text Resource"));

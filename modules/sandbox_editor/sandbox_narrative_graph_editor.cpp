@@ -95,8 +95,9 @@ SandboxNarrativeGraphEditor::SandboxNarrativeGraphEditor(UndoRedo *p_standalone_
 	bar->add_child(palette);
 	palette->connect("about_to_popup", callable_mp(this, &SandboxNarrativeGraphEditor::configure_palette));
 	palette->get_popup()->connect("index_pressed", callable_mp(this, &SandboxNarrativeGraphEditor::palette_selected));
-	Button *arrange = memnew(Button(TTR("Auto-Arrange (Layered DAG)")));
-	bar->add_child(arrange);
+	arrange_button = memnew(Button(TTR("Auto-Arrange (Layered DAG)")));
+	arrange_button->set_disabled(true);
+	bar->add_child(arrange_button);
 	canvas = memnew(GraphEdit);
 	canvas->set_v_size_flags(SIZE_EXPAND_FILL);
 	canvas->set_show_arrange_button(false);
@@ -105,7 +106,14 @@ SandboxNarrativeGraphEditor::SandboxNarrativeGraphEditor(UndoRedo *p_standalone_
 		canvas->add_valid_connection_type(i, i);
 	}
 	add_child(canvas);
-	arrange->connect("pressed", callable_mp(canvas, &GraphEdit::arrange_nodes));
+	empty_prompt = memnew(Label(TTR("Select or create a MissionData or SequenceData resource to edit its flow graph.")));
+	empty_prompt->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	empty_prompt->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	empty_prompt->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	empty_prompt->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	canvas->add_child(empty_prompt);
+	arrange_button->connect("pressed", callable_mp(this, &SandboxNarrativeGraphEditor::arrange_and_save));
+	canvas->connect("popup_request", callable_mp(this, &SandboxNarrativeGraphEditor::popup_palette));
 	canvas->connect("connection_request", callable_mp(this, &SandboxNarrativeGraphEditor::request_link).bind(true));
 	canvas->connect("disconnection_request", callable_mp(this, &SandboxNarrativeGraphEditor::request_link).bind(false));
 	canvas->connect("delete_nodes_request", callable_mp(this, &SandboxNarrativeGraphEditor::remove_nodes));
@@ -192,7 +200,7 @@ void SandboxNarrativeGraphEditor::configure_palette() {
 }
 
 Vector2 SandboxNarrativeGraphEditor::insertion_position() const {
-	Vector2 position = (canvas->get_scroll_offset() + canvas->get_size() * 0.35f) / canvas->get_zoom();
+	Vector2 position = has_popup_position ? popup_position : (canvas->get_scroll_offset() + canvas->get_size() * 0.35f) / canvas->get_zoom();
 	for (uint32_t i = 0; i <= elements.size(); i++) {
 		bool occupied = false;
 		for (const KeyValue<StringName, GraphElement *> &item : elements) {
@@ -209,12 +217,26 @@ Vector2 SandboxNarrativeGraphEditor::insertion_position() const {
 	return position;
 }
 
+void SandboxNarrativeGraphEditor::popup_palette(const Vector2 &p_position) {
+	if (edited.is_null()) {
+		return;
+	}
+	has_popup_position = true;
+	popup_position = (canvas->get_scroll_offset() + p_position) / canvas->get_zoom();
+	configure_palette();
+	PopupMenu *menu = palette->get_popup();
+	menu->set_position(canvas->get_screen_position() + p_position);
+	menu->popup();
+}
+
 void SandboxNarrativeGraphEditor::palette_selected(int p_index) {
 	StringName type = palette->get_popup()->get_item_metadata(p_index);
+	const Vector2 pos = insertion_position();
+	has_popup_position = false;
 	if (type == "load") {
 		sequence_dialog->popup_centered_ratio(0.65);
 	} else {
-		(void)add_graph_node(type, insertion_position());
+		(void)add_graph_node(type, pos);
 	}
 }
 
@@ -332,6 +354,12 @@ void SandboxNarrativeGraphEditor::refresh() {
 	resources.clear();
 	node_keys.clear();
 	palette->set_disabled(edited.is_null());
+	if (arrange_button) {
+		arrange_button->set_disabled(edited.is_null());
+	}
+	if (empty_prompt) {
+		empty_prompt->set_visible(edited.is_null());
+	}
 	if (edited.is_null()) {
 		return;
 	}
@@ -597,9 +625,16 @@ void SandboxNarrativeGraphEditor::show_frame(const StringName &p_key, const Dict
 	title->set_h_size_flags(SIZE_EXPAND_FILL);
 	frame->get_titlebar_hbox()->add_child(title);
 	title->connect("text_submitted", callable_mp(this, &SandboxNarrativeGraphEditor::rename_frame).bind(p_key));
+	title->connect(SceneStringName(focus_exited), callable_mp(this, &SandboxNarrativeGraphEditor::commit_frame_title).bind(title, p_key));
 	frame->connect("resize_request", callable_mp(this, &SandboxNarrativeGraphEditor::resize_frame).bind(frame));
 	frame->connect("resize_end", callable_mp(this, &SandboxNarrativeGraphEditor::save_layout).unbind(1));
 	elements[p_key] = frame;
+}
+
+void SandboxNarrativeGraphEditor::commit_frame_title(LineEdit *p_title, const StringName &p_key) {
+	if (p_title) {
+		rename_frame(p_title->get_text(), p_key);
+	}
 }
 
 void SandboxNarrativeGraphEditor::resize_frame(const Vector2 &p_size, GraphFrame *p_frame) {
@@ -607,8 +642,14 @@ void SandboxNarrativeGraphEditor::resize_frame(const Vector2 &p_size, GraphFrame
 }
 
 void SandboxNarrativeGraphEditor::rename_frame(const String &p_value, const StringName &p_key) {
+	if (edited.is_null()) {
+		return;
+	}
 	Dictionary meta = Dictionary(edited->get("_editor_graph_meta")).duplicate(true);
 	Dictionary layout = meta.get(p_key, Dictionary());
+	if (String(layout.get("title", TTR("Comment"))) == p_value) {
+		return;
+	}
 	layout["title"] = p_value;
 	meta[p_key] = layout;
 	Dictionary changes;
@@ -834,6 +875,14 @@ void SandboxNarrativeGraphEditor::save_layout() {
 		change(changes, edited, "_editor_graph_meta", meta);
 		commit(TTR("Move Narrative Nodes"), changes);
 	}
+}
+
+void SandboxNarrativeGraphEditor::arrange_and_save() {
+	if (edited.is_null() || !canvas) {
+		return;
+	}
+	canvas->arrange_nodes();
+	save_layout();
 }
 
 void SandboxNarrativeGraphEditor::attach_nodes(const TypedArray<StringName> &p_names, const StringName &p_frame) {

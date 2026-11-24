@@ -43,6 +43,7 @@ class SandboxIdPickerProperty : public EditorProperty {
 
 	void _open();
 	void _filter(const String &p_text);
+	void _filter_input(const Ref<InputEvent> &p_event);
 	void _choose();
 	void _submit(const String &p_id);
 	void _focus();
@@ -56,6 +57,8 @@ protected:
 public:
 	void setup(SandboxInspectorPlugin *p_plugin, SandboxIdHint p_hint, const Ref<SandboxSchemaRegistry> &p_schema, Variant::Type p_property_type = Variant::STRING_NAME);
 	void update_property() override;
+	void set_armed(bool p_armed);
+	bool is_armed() const;
 	bool pick_at(Node *p_root, Camera3D *p_camera, const Point2 &p_position);
 	SandboxIdPickerProperty();
 };
@@ -75,5 +78,7 @@ protected:
 public:
 	static Ref<SandboxSchemaRegistry> discover_schema(Node *p_scene_root);
 	void arm_picker(ObjectID p_picker);
+	void disarm_picker();
+	ObjectID get_armed_picker() const { return armed_picker; }
 	bool forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 };

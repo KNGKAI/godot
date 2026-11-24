@@ -32,6 +32,8 @@
 
 #include "scene/gui/box_container.h"
 
+class Button;
+class EditorFileDialog;
 class Label;
 class LineEdit;
 class OptionButton;
@@ -41,11 +43,19 @@ class SandboxHLODBaker : public VBoxContainer {
 	GDCLASS(SandboxHLODBaker, VBoxContainer);
 
 	LineEdit *output_directory = nullptr;
+	Button *browse_directory = nullptr;
+	EditorFileDialog *dir_dialog = nullptr;
 	OptionButton *grid_layer = nullptr;
 	SpinBox *tile_size = nullptr;
 	Label *result = nullptr;
 
+	void _browse_output_directory();
+	void _select_output_directory(const String &p_dir);
 	void _bake_edited_scene();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods() {}
 
 public:
 	// Each bake publishes a self-contained generation beneath the output directory.
