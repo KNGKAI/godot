@@ -1,0 +1,145 @@
+[gd_resource type="SandboxSchemaRegistry" format=3]
+
+[resource]
+state_keys_data = Array[Dictionary]([{
+"default_value": false,
+"deprecated": false,
+"description": "True once the field technician runs power.diagnose at the kiosk.",
+"dynamically_discovered": false,
+"key": &"mission.kiosk_diagnosed",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}, {
+"default_value": "pending",
+"deprecated": false,
+"description": "Records which resolution path stabilized Sector 7.",
+"dynamically_discovered": false,
+"key": &"mission.resolution_branch",
+"range_hint": Vector2(0, 0),
+"value_type": 4
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True when auxiliary cryo-coolant valve is open.",
+"dynamically_discovered": false,
+"key": &"power.coolant_valve_open",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True when overload current is shunted into the corporate plaza.",
+"dynamically_discovered": false,
+"key": &"power.corp_sector_vented",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True once Sector 7 load drops below 72 MW and temp below 82 C.",
+"dynamically_discovered": false,
+"key": &"power.grid_stabilized",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}, {
+"default_value": 94.0,
+"deprecated": false,
+"description": "Current load in Megawatts on Sector 7 primary substation.",
+"dynamically_discovered": false,
+"key": &"power.sector7_load_mw",
+"range_hint": Vector2(0, 150),
+"value_type": 3
+}, {
+"default_value": 0.35,
+"deprecated": false,
+"description": "District streetlight and neon brightness multiplier.",
+"dynamically_discovered": false,
+"key": &"power.streetlights_dimmer",
+"range_hint": Vector2(0, 1.5),
+"value_type": 3
+}, {
+"default_value": 112.0,
+"deprecated": false,
+"description": "Core transformer temperature in degrees Celsius.",
+"dynamically_discovered": false,
+"key": &"power.transformer_temp_c",
+"range_hint": Vector2(20, 250),
+"value_type": 3
+}, {
+"default_value": 200,
+"deprecated": false,
+"description": "Total simulated vehicles and pedestrians in Sector 7.",
+"dynamically_discovered": false,
+"key": &"traffic.active_agents",
+"range_hint": Vector2(0, 2000),
+"value_type": 2
+}, {
+"default_value": 12.0,
+"deprecated": false,
+"description": "Target traffic speed along the Sector 7 artery in m/s.",
+"dynamically_discovered": false,
+"key": &"traffic.avg_speed_mps",
+"range_hint": Vector2(0, 40),
+"value_type": 3
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True when Sector 7 traffic corridor signals are synchronized green.",
+"dynamically_discovered": false,
+"key": &"traffic.signals_green",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}])
+events_data = Array[Dictionary]([{
+"deprecated": false,
+"description": "Emitted when auxiliary cryo-coolant valve opens.",
+"dynamically_discovered": false,
+"event_id": &"grid.coolant_opened",
+"payload_schema": {
+"manual": 1
+}
+}, {
+"deprecated": false,
+"description": "Emitted when overload is shunted to Corporate Plaza.",
+"dynamically_discovered": false,
+"event_id": &"grid.corp_surge_vented",
+"payload_schema": {
+"target": 4
+}
+}, {
+"deprecated": false,
+"description": "Emitted when power.diagnose is executed.",
+"dynamically_discovered": false,
+"event_id": &"grid.kiosk_diagnostic_run",
+"payload_schema": {
+"sector": 4
+}
+}, {
+"deprecated": false,
+"description": "Emitted on transformer thermal warning.",
+"dynamically_discovered": false,
+"event_id": &"grid.overload_alarm",
+"payload_schema": {
+"load_mw": 3,
+"temp_c": 3
+}
+}, {
+"deprecated": false,
+"description": "Emitted when Sector 7 grid stabilizes.",
+"dynamically_discovered": false,
+"event_id": &"grid.stabilized",
+"payload_schema": {
+"load_mw": 3,
+"route": 4
+}
+}, {
+"deprecated": false,
+"description": "Emitted when traffic signals are overridden to green.",
+"dynamically_discovered": false,
+"event_id": &"traffic.corridor_cleared",
+"payload_schema": {}
+}])
+actor_ids_data = PackedStringArray("fixer_player", "substation_core")
+tags_data = PackedStringArray("infrastructure", "player", "vehicle")
+marker_ids_data = PackedStringArray("MarkerKiosk", "MarkerSubstation", "MarkerValve")
+archetype_ids_data = PackedStringArray("cyber_cruiser", "street_drone")

@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/hydrated_vehicle_controller.gd" id="1_kvrtx"]
+[ext_resource type="CylinderMesh" path="res://resources/drone_proxy_mesh.tres" id="2_2fy8g"]
+
+[node name="StreetDrone" type="Node3D" unique_id=1554924337]
+script = ExtResource("1_kvrtx")
+
+[node name="Hydratable" type="HydratableActor" parent="." unique_id=292756941]
+archetype_id = &"street_drone"
+hydrate_radius = 65.0
+dehydrate_radius = 85.0
+
+[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=639664293]
+mesh = ExtResource("2_2fy8g")

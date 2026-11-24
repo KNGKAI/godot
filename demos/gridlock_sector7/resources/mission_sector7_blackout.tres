@@ -1,0 +1,125 @@
+[gd_resource type="MissionData" format=3]
+
+[ext_resource type="SequenceData" path="res://resources/seq_grid_restored.tres" id="1_jdneg"]
+[ext_resource type="SequenceData" path="res://resources/seq_blackout_alert.tres" id="2_ogxpp"]
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_g27vh"]
+key = &"mission.kiosk_diagnosed"
+expected = true
+
+[sub_resource type="ObjectiveData" id="ObjectiveData_nbtue"]
+objective_id = &"obj_diagnose_kiosk"
+title = "1. Run Diagnostic at Street Kiosk [F1]"
+description = "Engage the Street Corner Kiosk and run 'power.diagnose'."
+complete_condition = SubResource("CondStateEquals_g27vh")
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_sll1x"]
+key = &"power.coolant_valve_open"
+expected = true
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_bjpbw"]
+key = &"power.grid_stabilized"
+expected = true
+
+[sub_resource type="CondAny" id="CondAny_xdur3"]
+children = Array[SandboxCondition]([SubResource("CondStateEquals_sll1x"), SubResource("CondStateEquals_bjpbw")])
+
+[sub_resource type="ObjectiveData" id="ObjectiveData_vvud2"]
+objective_id = &"obj_open_coolant_valve"
+title = "2A. [Repair Route] Open Cryo-Coolant Valve [F3]"
+description = "Engage the Coolant Valve terminal and run 'power.coolant true'."
+required = false
+complete_condition = SubResource("CondAny_xdur3")
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_kfi22"]
+key = &"power.corp_sector_vented"
+expected = true
+
+[sub_resource type="CondAny" id="CondAny_vh42q"]
+children = Array[SandboxCondition]([SubResource("CondStateEquals_kfi22"), SubResource("CondStateEquals_bjpbw")])
+
+[sub_resource type="ObjectiveData" id="ObjectiveData_sm2tn"]
+objective_id = &"obj_vent_corp_grid"
+title = "2B. [Hack Route] Shunt Load at Admin Console [F2]"
+description = "Engage the Substation Admin Console and run 'power.vent_corp'."
+required = false
+complete_condition = SubResource("CondAny_vh42q")
+
+[sub_resource type="CondStateRange" id="CondStateRange_tkgp1"]
+key = &"power.sector7_load_mw"
+max_val = 72.0
+
+[sub_resource type="CondStateRange" id="CondStateRange_umg6b"]
+key = &"power.transformer_temp_c"
+min_val = 20.0
+max_val = 82.0
+
+[sub_resource type="CondAny" id="CondAny_883hi"]
+children = Array[SandboxCondition]([SubResource("CondStateEquals_sll1x"), SubResource("CondStateEquals_kfi22")])
+
+[sub_resource type="CondAll" id="CondAll_24a3e"]
+children = Array[SandboxCondition]([SubResource("CondStateRange_tkgp1"), SubResource("CondStateRange_umg6b"), SubResource("CondAny_883hi")])
+
+[sub_resource type="ObjectiveData" id="ObjectiveData_ubofn"]
+objective_id = &"obj_verify_grid_stable"
+title = "3. Verify Sector 7 Grid Stabilization (< 72 MW & < 82 C)"
+description = "Wait for thermal runaway to subside after executing either branch."
+complete_condition = SubResource("CondAll_24a3e")
+
+[sub_resource type="MissionTransition" id="MissionTransition_37abh"]
+from_objective_id = &"obj_diagnose_kiosk"
+to_objective_id = &"obj_open_coolant_valve"
+
+[sub_resource type="MissionTransition" id="MissionTransition_icchn"]
+from_objective_id = &"obj_diagnose_kiosk"
+to_objective_id = &"obj_vent_corp_grid"
+
+[sub_resource type="MissionTransition" id="MissionTransition_dmr4n"]
+from_objective_id = &"obj_open_coolant_valve"
+to_objective_id = &"obj_verify_grid_stable"
+
+[sub_resource type="MissionTransition" id="MissionTransition_aa8cw"]
+from_objective_id = &"obj_vent_corp_grid"
+to_objective_id = &"obj_verify_grid_stable"
+
+[resource]
+use_first_as_entry = false
+mission_id = &"sector7_blackout"
+entry_objective_id = &"obj_diagnose_kiosk"
+objectives = Array[ObjectiveData]([SubResource("ObjectiveData_nbtue"), SubResource("ObjectiveData_vvud2"), SubResource("ObjectiveData_sm2tn"), SubResource("ObjectiveData_ubofn")])
+transitions = Array[MissionTransition]([SubResource("MissionTransition_37abh"), SubResource("MissionTransition_icchn"), SubResource("MissionTransition_dmr4n"), SubResource("MissionTransition_aa8cw")])
+on_start_sequence = ExtResource("2_ogxpp")
+on_complete_sequence = ExtResource("1_jdneg")
+_editor_graph_meta = {
+"entry": {
+"position": Vector2(40, 220)
+},
+"frame_phase1": {
+"rect": Rect2(320, 40, 420, 380),
+"title": "Phase 1: Field Diagnosis"
+},
+"frame_phase2": {
+"rect": Rect2(780, 20, 460, 560),
+"title": "Phase 2: Branching Resolution"
+},
+"frame_phase3": {
+"rect": Rect2(1280, 100, 480, 420),
+"title": "Phase 3: Grid Stabilization"
+},
+"node_6f626a5f646961676e6f73655f6b696f736b": {
+"frame": &"frame_phase1",
+"position": Vector2(360, 120)
+},
+"node_6f626a5f6f70656e5f636f6f6c616e745f76616c7665": {
+"frame": &"frame_phase2",
+"position": Vector2(820, 80)
+},
+"node_6f626a5f76656e745f636f72705f67726964": {
+"frame": &"frame_phase2",
+"position": Vector2(820, 340)
+},
+"node_6f626a5f7665726966795f677269645f737461626c65": {
+"frame": &"frame_phase3",
+"position": Vector2(1320, 180)
+}
+}

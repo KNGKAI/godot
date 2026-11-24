@@ -1,0 +1,164 @@
+[gd_resource type="WorldPartitionManifest" format=3]
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_pyui2"]
+cell_id = &"meso_-1_0"
+layer = &"meso"
+grid_coords = Vector2i(-1, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_-1_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_-1_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_y3n3u"]
+cell_id = &"meso_0_0"
+layer = &"meso"
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_0_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_0_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_4ctk7"]
+cell_id = &"meso_1_0"
+layer = &"meso"
+grid_coords = Vector2i(1, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_1_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_1_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_f6m1k"]
+cell_id = &"meso_2_0"
+layer = &"meso"
+grid_coords = Vector2i(2, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_2_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_2_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_1lc3g"]
+cell_id = &"meso_3_0"
+layer = &"meso"
+grid_coords = Vector2i(3, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_3_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_3_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_kmxin"]
+cell_id = &"meso_4_0"
+layer = &"meso"
+grid_coords = Vector2i(4, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_4_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_4_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_gnb3u"]
+cell_id = &"meso_5_0"
+layer = &"meso"
+grid_coords = Vector2i(5, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_5_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_5_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_k66h0"]
+cell_id = &"meso_6_0"
+layer = &"meso"
+grid_coords = Vector2i(6, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_6_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_6_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_6srmn"]
+cell_id = &"meso_7_0"
+layer = &"meso"
+grid_coords = Vector2i(7, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_7_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_7_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_yfrek"]
+cell_id = &"meso_8_0"
+layer = &"meso"
+grid_coords = Vector2i(8, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_8_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_8_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_wcxkt"]
+cell_id = &"meso_9_0"
+layer = &"meso"
+grid_coords = Vector2i(9, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_9_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_9_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_j1436"]
+cell_id = &"meso_10_0"
+layer = &"meso"
+grid_coords = Vector2i(10, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_10_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_10_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_7fmod"]
+cell_id = &"meso_11_0"
+layer = &"meso"
+grid_coords = Vector2i(11, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_11_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_11_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_ynkoi"]
+cell_id = &"meso_12_0"
+layer = &"meso"
+grid_coords = Vector2i(12, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_12_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_12_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_cwgg5"]
+cell_id = &"meso_13_0"
+layer = &"meso"
+grid_coords = Vector2i(13, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_13_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_13_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_d1i4u"]
+cell_id = &"meso_14_0"
+layer = &"meso"
+grid_coords = Vector2i(14, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_14_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_14_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_nhebr"]
+cell_id = &"meso_15_0"
+layer = &"meso"
+grid_coords = Vector2i(15, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_15_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_15_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_phog2"]
+cell_id = &"meso_16_0"
+layer = &"meso"
+grid_coords = Vector2i(16, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_16_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_16_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_upqwj"]
+cell_id = &"meso_17_0"
+layer = &"meso"
+grid_coords = Vector2i(17, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_17_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_17_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_3eae2"]
+cell_id = &"meso_18_0"
+layer = &"meso"
+grid_coords = Vector2i(18, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_18_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_18_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_5hco1"]
+cell_id = &"meso_19_0"
+layer = &"meso"
+grid_coords = Vector2i(19, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_19_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_19_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_neoga"]
+cell_id = &"meso_20_0"
+layer = &"meso"
+grid_coords = Vector2i(20, 0)
+hlod_impostor_path = "res://baked_cells/coastal_1/meso_20_0_proxy.res"
+high_scene_path = "res://baked_cells/coastal_1/meso_20_0.scn"
+
+[sub_resource type="WorldPartitionLayer" id="WorldPartitionLayer_wlp2p"]
+layer_id = &"meso"
+cell_size = 256.0
+load_radius = 640.0
+evict_radius = 960.0
+
+[resource]
+layers = Array[WorldPartitionLayer]([SubResource("WorldPartitionLayer_wlp2p")])
+cells = Array[WorldPartitionCell]([SubResource("WorldPartitionCell_pyui2"), SubResource("WorldPartitionCell_y3n3u"), SubResource("WorldPartitionCell_4ctk7"), SubResource("WorldPartitionCell_f6m1k"), SubResource("WorldPartitionCell_1lc3g"), SubResource("WorldPartitionCell_kmxin"), SubResource("WorldPartitionCell_gnb3u"), SubResource("WorldPartitionCell_k66h0"), SubResource("WorldPartitionCell_6srmn"), SubResource("WorldPartitionCell_yfrek"), SubResource("WorldPartitionCell_wcxkt"), SubResource("WorldPartitionCell_j1436"), SubResource("WorldPartitionCell_7fmod"), SubResource("WorldPartitionCell_ynkoi"), SubResource("WorldPartitionCell_cwgg5"), SubResource("WorldPartitionCell_d1i4u"), SubResource("WorldPartitionCell_nhebr"), SubResource("WorldPartitionCell_phog2"), SubResource("WorldPartitionCell_upqwj"), SubResource("WorldPartitionCell_3eae2"), SubResource("WorldPartitionCell_5hco1"), SubResource("WorldPartitionCell_neoga")])

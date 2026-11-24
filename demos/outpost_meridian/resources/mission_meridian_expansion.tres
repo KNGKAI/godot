@@ -1,0 +1,119 @@
+[gd_resource type="MissionData" format=3]
+
+[ext_resource type="SequenceData" path="res://resources/seq_meridian_terraformed.tres" id="1_v1eot"]
+[ext_resource type="SequenceData" path="res://resources/seq_meridian_boot.tres" id="2_4vq2c"]
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_ebrdc"]
+key = &"mission.telemetry_linked"
+expected = true
+
+[sub_resource type="ObjectiveData" id="ObjectiveData_cq6o2"]
+objective_id = &"obj_link_telemetry"
+title = "1. Synchronize Orbital Telemetry at Command Deck [F1]"
+description = "Run 'colony.link_telemetry' on the Command Deck terminal."
+complete_condition = SubResource("CondStateEquals_ebrdc")
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_isdwg"]
+key = &"colony.scrubber_overdrive"
+expected = true
+
+[sub_resource type="CondStateRange" id="CondStateRange_2q6ho"]
+key = &"colony.o2_pressure_kpa"
+min_val = 95.0
+max_val = 120.0
+
+[sub_resource type="CondStateRange" id="CondStateRange_uv7w4"]
+key = &"colony.refined_ore_tons"
+min_val = 250.0
+max_val = 1000.0
+
+[sub_resource type="CondAll" id="CondAll_rloit"]
+children = Array[SandboxCondition]([SubResource("CondStateRange_2q6ho"), SubResource("CondStateRange_uv7w4")])
+
+[sub_resource type="CondAny" id="CondAny_v8df6"]
+children = Array[SandboxCondition]([SubResource("CondStateEquals_isdwg"), SubResource("CondAll_rloit")])
+
+[sub_resource type="ObjectiveData" id="ObjectiveData_elq4d"]
+objective_id = &"obj_boost_scrubbers"
+title = "2A. [Atmosphere Branch] Activate O2 Scrubber Overdrive [F2]"
+description = "Run 'colony.scrubber_boost true' on the Scrubber Bay terminal."
+required = false
+complete_condition = SubResource("CondAny_v8df6")
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_ow8ig"]
+key = &"fleet.convoy_overclock"
+expected = true
+
+[sub_resource type="CondAny" id="CondAny_ewa2b"]
+children = Array[SandboxCondition]([SubResource("CondStateEquals_ow8ig"), SubResource("CondAll_rloit")])
+
+[sub_resource type="ObjectiveData" id="ObjectiveData_xeui0"]
+objective_id = &"obj_overclock_fleet"
+title = "2B. [Fleet Branch] Overclock Crater Mining Fleet [F1]"
+description = "Run 'fleet.overclock true' on the Command Deck Admin Console."
+required = false
+complete_condition = SubResource("CondAny_ewa2b")
+
+[sub_resource type="ObjectiveData" id="ObjectiveData_vs7yt"]
+objective_id = &"obj_reach_colony_quota"
+title = "3. Reach Terraforming Quota (O2 >= 95 kPa & Ore >= 250 t) [F4: 50x SimClock]"
+description = "Fast-forward SimClock up to 50x ('sim.speed 50' or [F4]) until O2 and Ore reach target thresholds."
+complete_condition = SubResource("CondAll_rloit")
+
+[sub_resource type="MissionTransition" id="MissionTransition_qa00w"]
+from_objective_id = &"obj_link_telemetry"
+to_objective_id = &"obj_boost_scrubbers"
+
+[sub_resource type="MissionTransition" id="MissionTransition_6atpx"]
+from_objective_id = &"obj_link_telemetry"
+to_objective_id = &"obj_overclock_fleet"
+
+[sub_resource type="MissionTransition" id="MissionTransition_ltm64"]
+from_objective_id = &"obj_boost_scrubbers"
+to_objective_id = &"obj_reach_colony_quota"
+
+[sub_resource type="MissionTransition" id="MissionTransition_alvqc"]
+from_objective_id = &"obj_overclock_fleet"
+to_objective_id = &"obj_reach_colony_quota"
+
+[resource]
+use_first_as_entry = false
+mission_id = &"meridian_expansion"
+entry_objective_id = &"obj_link_telemetry"
+objectives = Array[ObjectiveData]([SubResource("ObjectiveData_cq6o2"), SubResource("ObjectiveData_elq4d"), SubResource("ObjectiveData_xeui0"), SubResource("ObjectiveData_vs7yt")])
+transitions = Array[MissionTransition]([SubResource("MissionTransition_qa00w"), SubResource("MissionTransition_6atpx"), SubResource("MissionTransition_ltm64"), SubResource("MissionTransition_alvqc")])
+on_start_sequence = ExtResource("2_4vq2c")
+on_complete_sequence = ExtResource("1_v1eot")
+_editor_graph_meta = {
+"entry": {
+"position": Vector2(40, 220)
+},
+"frame_link": {
+"rect": Rect2(320, 40, 420, 360),
+"title": "Phase 1: Orbital Telemetry"
+},
+"frame_ops": {
+"rect": Rect2(780, 20, 460, 540),
+"title": "Phase 2: Colony & Fleet Directives"
+},
+"frame_quota": {
+"rect": Rect2(1280, 100, 480, 400),
+"title": "Phase 3: 50x Fast-Forward Quota"
+},
+"node_6f626a5f626f6f73745f736372756262657273": {
+"frame": &"frame_ops",
+"position": Vector2(820, 80)
+},
+"node_6f626a5f6c696e6b5f74656c656d65747279": {
+"frame": &"frame_link",
+"position": Vector2(360, 120)
+},
+"node_6f626a5f6f766572636c6f636b5f666c656574": {
+"frame": &"frame_ops",
+"position": Vector2(820, 320)
+},
+"node_6f626a5f72656163685f636f6c6f6e795f71756f7461": {
+"frame": &"frame_quota",
+"position": Vector2(1320, 180)
+}
+}

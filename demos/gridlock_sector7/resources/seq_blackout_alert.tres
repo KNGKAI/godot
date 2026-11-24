@@ -1,0 +1,31 @@
+[gd_resource type="SequenceData" format=3]
+
+[sub_resource type="ActionSetState" id="ActionSetState_kb7pq"]
+step_uuid = &"step_dim_lights"
+next_steps = PackedStringArray("step_emit_alarm")
+key = &"power.streetlights_dimmer"
+value = 0.35
+
+[sub_resource type="ActionEmitEvent" id="ActionEmitEvent_b3ew7"]
+step_uuid = &"step_emit_alarm"
+event_id = &"grid.overload_alarm"
+payload = {
+"sector": "sector_7",
+"temp_c": 112.0
+}
+
+[resource]
+sequence_id = &"seq_blackout_alert"
+entry_step_uuid = &"step_dim_lights"
+steps = Array[SequenceAction]([SubResource("ActionSetState_kb7pq"), SubResource("ActionEmitEvent_b3ew7")])
+_editor_graph_meta = {
+"entry": {
+"position": Vector2(40, 120)
+},
+"node_737465705f64696d5f6c6967687473": {
+"position": Vector2(340, 100)
+},
+"node_737465705f656d69745f616c61726d": {
+"position": Vector2(660, 100)
+}
+}

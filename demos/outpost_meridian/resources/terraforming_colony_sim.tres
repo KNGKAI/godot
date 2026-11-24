@@ -1,0 +1,8 @@
+[gd_resource type="SimModule" script_class="TerraformingColonySim" format=3]
+
+[ext_resource type="Script" path="res://scripts/terraforming_colony_sim.gd" id="1_mo6bi"]
+
+[resource]
+module_id = &"terraforming_colony_sim"
+tick_rate_hz = 10.0
+script = ExtResource("1_mo6bi")

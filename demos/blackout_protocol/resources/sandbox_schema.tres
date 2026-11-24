@@ -1,0 +1,175 @@
+[gd_resource type="SandboxSchemaRegistry" format=3]
+
+[resource]
+state_keys_data = Array[Dictionary]([{
+"default_value": 400,
+"deprecated": false,
+"description": "Total active civilian cars and fire trucks in SoA memory.",
+"dynamically_discovered": false,
+"key": &"evac.active_vehicles",
+"range_hint": Vector2(0, 2000),
+"value_type": 2
+}, {
+"default_value": 22.0,
+"deprecated": false,
+"description": "Percentage of coastal district residents evacuated (target >= 90%).",
+"dynamically_discovered": false,
+"key": &"evac.civilians_evacuated_pct",
+"range_hint": Vector2(0, 100),
+"value_type": 3
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True when coastal highway lanes are reversed for contraflow evacuation.",
+"dynamically_discovered": false,
+"key": &"evac.contraflow_active",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True when Rescue-1 executes an aerial retardant drop.",
+"dynamically_discovered": false,
+"key": &"fire.airdrop_deployed",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}, {
+"default_value": 6,
+"deprecated": false,
+"description": "Count of active burning city blocks.",
+"dynamically_discovered": false,
+"key": &"fire.burning_blocks",
+"range_hint": Vector2(0, 16),
+"value_type": 2
+}, {
+"default_value": 78.0,
+"deprecated": false,
+"description": "Aggregate urban fire hazard percentage (target <= 15%).",
+"dynamically_discovered": false,
+"key": &"fire.city_hazard_pct",
+"range_hint": Vector2(0, 100),
+"value_type": 3
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True when ground foam-suppression fire trucks are deployed.",
+"dynamically_discovered": false,
+"key": &"fire.trucks_dispatched",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}, {
+"default_value": "code_red",
+"deprecated": false,
+"description": "Current coastal emergency response phase.",
+"dynamically_discovered": false,
+"key": &"mission.emergency_phase",
+"range_hint": Vector2(0, 0),
+"value_type": 4
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True once Rescue-1 links its airborne Doppler & FLIR radar.",
+"dynamically_discovered": false,
+"key": &"mission.radar_linked",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}, {
+"default_value": 3.4,
+"deprecated": false,
+"description": "Harbor storm surge water elevation in meters.",
+"dynamically_discovered": false,
+"key": &"weather.flood_level_m",
+"range_hint": Vector2(0, 10),
+"value_type": 3
+}, {
+"default_value": 0.45,
+"deprecated": false,
+"description": "Normalized rainfall intensity [0.0, 1.0].",
+"dynamically_discovered": false,
+"key": &"weather.rain_intensity",
+"range_hint": Vector2(0, 1),
+"value_type": 3
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True when harbor diversion floodgates are open.",
+"dynamically_discovered": false,
+"key": &"weather.seawall_gates_open",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}, {
+"default_value": 58.0,
+"deprecated": false,
+"description": "Coastal gale wind speed in knots.",
+"dynamically_discovered": false,
+"key": &"weather.wind_speed_knots",
+"range_hint": Vector2(0, 120),
+"value_type": 3
+}])
+events_data = Array[Dictionary]([{
+"deprecated": false,
+"description": "Emitted when highway contraflow opens.",
+"dynamically_discovered": false,
+"event_id": &"evac.contraflow_enabled",
+"payload_schema": {
+"speed_mps": 3
+}
+}, {
+"deprecated": false,
+"description": "Emitted when civilian evacuation reaches >= 90%.",
+"dynamically_discovered": false,
+"event_id": &"evac.corridor_secured",
+"payload_schema": {
+"evacuated_pct": 3
+}
+}, {
+"deprecated": false,
+"description": "Emitted when airborne radar sweep completes.",
+"dynamically_discovered": false,
+"event_id": &"evac.radar_swept",
+"payload_schema": {
+"unit": 4
+}
+}, {
+"deprecated": false,
+"description": "Emitted when Rescue-1 executes an aerial water drop.",
+"dynamically_discovered": false,
+"event_id": &"fire.airdrop_executed",
+"payload_schema": {
+"sector": 4
+}
+}, {
+"deprecated": false,
+"description": "Emitted when city fire hazard drops to <= 15%.",
+"dynamically_discovered": false,
+"event_id": &"fire.all_contained",
+"payload_schema": {
+"hazard_pct": 3
+}
+}, {
+"deprecated": false,
+"description": "Emitted when ground fire brigades deploy.",
+"dynamically_discovered": false,
+"event_id": &"fire.trucks_deployed",
+"payload_schema": {
+"units": 2
+}
+}, {
+"deprecated": false,
+"description": "Emitted when coastal floodgates open.",
+"dynamically_discovered": false,
+"event_id": &"weather.floodgates_opened",
+"payload_schema": {}
+}, {
+"deprecated": false,
+"description": "Emitted when harbor storm surge exceeds 3.5m.",
+"dynamically_discovered": false,
+"event_id": &"weather.storm_surge_warning",
+"payload_schema": {
+"flood_level_m": 3
+}
+}])
+actor_ids_data = PackedStringArray("refinery_complex", "rescue_chopper")
+tags_data = PackedStringArray("airborne", "emergency")
+marker_ids_data = PackedStringArray("MarkerHelipadHQ", "MarkerRefineryFire", "MarkerSeawallControl")
+archetype_ids_data = PackedStringArray("evac_sedan", "fire_truck")

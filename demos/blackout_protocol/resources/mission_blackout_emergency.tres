@@ -1,0 +1,126 @@
+[gd_resource type="MissionData" format=3]
+
+[ext_resource type="SequenceData" path="res://resources/seq_all_clear.tres" id="1_o1dtb"]
+[ext_resource type="SequenceData" path="res://resources/seq_storm_landfall.tres" id="2_ban7p"]
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_x10n6"]
+key = &"mission.radar_linked"
+expected = true
+
+[sub_resource type="ObjectiveData" id="ObjectiveData_jxl5y"]
+objective_id = &"obj_radar_sweep"
+title = "1. Link Airborne Doppler & Thermal Radar (Cockpit CLI)"
+description = "Run 'dispatch.radar_sweep' on the Rescue-1 Cockpit Terminal."
+complete_condition = SubResource("CondStateEquals_x10n6")
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_ayro0"]
+key = &"fire.trucks_dispatched"
+expected = true
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_ut2qq"]
+key = &"fire.airdrop_deployed"
+expected = true
+
+[sub_resource type="CondStateRange" id="CondStateRange_8sox2"]
+key = &"fire.city_hazard_pct"
+max_val = 15.0
+
+[sub_resource type="CondStateRange" id="CondStateRange_r3erv"]
+key = &"evac.civilians_evacuated_pct"
+min_val = 90.0
+max_val = 100.0
+
+[sub_resource type="CondAll" id="CondAll_4fnsb"]
+children = Array[SandboxCondition]([SubResource("CondStateRange_8sox2"), SubResource("CondStateRange_r3erv")])
+
+[sub_resource type="CondAny" id="CondAny_m0vbr"]
+children = Array[SandboxCondition]([SubResource("CondStateEquals_ayro0"), SubResource("CondStateEquals_ut2qq"), SubResource("CondAll_4fnsb")])
+
+[sub_resource type="ObjectiveData" id="ObjectiveData_3uybn"]
+objective_id = &"obj_suppress_fires"
+title = "2A. [Fire Suppression] Deploy Fire Brigades or Aerial Drop [F2]"
+description = "Run 'dispatch.fire_trucks true' or 'dispatch.airdrop' to suppress the refinery fires."
+required = false
+complete_condition = SubResource("CondAny_m0vbr")
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_3omk8"]
+key = &"evac.contraflow_active"
+expected = true
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_5e1k6"]
+key = &"weather.seawall_gates_open"
+expected = true
+
+[sub_resource type="CondAny" id="CondAny_ise6o"]
+children = Array[SandboxCondition]([SubResource("CondStateEquals_3omk8"), SubResource("CondStateEquals_5e1k6"), SubResource("CondAll_4fnsb")])
+
+[sub_resource type="ObjectiveData" id="ObjectiveData_67ig8"]
+objective_id = &"obj_evac_and_floodgates"
+title = "2B. [Civil Defense] Open Highway Contraflow & Seawall Gates [F1/F3]"
+description = "Run 'dispatch.contraflow true' and 'weather.floodgate true'."
+required = false
+complete_condition = SubResource("CondAny_ise6o")
+
+[sub_resource type="ObjectiveData" id="ObjectiveData_gplk5"]
+objective_id = &"obj_secure_coastal_city"
+title = "3. Contain Fire Hazard (<= 15%) & Complete Evacuation (>= 90%)"
+description = "Verify coastal fires are contained and civilian evacuation reaches 90%."
+complete_condition = SubResource("CondAll_4fnsb")
+
+[sub_resource type="MissionTransition" id="MissionTransition_k531g"]
+from_objective_id = &"obj_radar_sweep"
+to_objective_id = &"obj_suppress_fires"
+
+[sub_resource type="MissionTransition" id="MissionTransition_2gm1b"]
+from_objective_id = &"obj_radar_sweep"
+to_objective_id = &"obj_evac_and_floodgates"
+
+[sub_resource type="MissionTransition" id="MissionTransition_2p52w"]
+from_objective_id = &"obj_suppress_fires"
+to_objective_id = &"obj_secure_coastal_city"
+
+[sub_resource type="MissionTransition" id="MissionTransition_ijrly"]
+from_objective_id = &"obj_evac_and_floodgates"
+to_objective_id = &"obj_secure_coastal_city"
+
+[resource]
+use_first_as_entry = false
+mission_id = &"blackout_emergency"
+entry_objective_id = &"obj_radar_sweep"
+objectives = Array[ObjectiveData]([SubResource("ObjectiveData_jxl5y"), SubResource("ObjectiveData_3uybn"), SubResource("ObjectiveData_67ig8"), SubResource("ObjectiveData_gplk5")])
+transitions = Array[MissionTransition]([SubResource("MissionTransition_k531g"), SubResource("MissionTransition_2gm1b"), SubResource("MissionTransition_2p52w"), SubResource("MissionTransition_ijrly")])
+on_start_sequence = ExtResource("2_ban7p")
+on_complete_sequence = ExtResource("1_o1dtb")
+_editor_graph_meta = {
+"entry": {
+"position": Vector2(40, 220)
+},
+"frame_dispatch": {
+"rect": Rect2(780, 20, 460, 540),
+"title": "Phase 2: Fire & Evacuation Dispatch"
+},
+"frame_recon": {
+"rect": Rect2(320, 40, 420, 360),
+"title": "Phase 1: Airborne FLIR Recon"
+},
+"frame_secure": {
+"rect": Rect2(1280, 100, 480, 400),
+"title": "Phase 3: City Containment"
+},
+"node_6f626a5f657661635f616e645f666c6f6f646761746573": {
+"frame": &"frame_dispatch",
+"position": Vector2(820, 320)
+},
+"node_6f626a5f72616461725f7377656570": {
+"frame": &"frame_recon",
+"position": Vector2(360, 120)
+},
+"node_6f626a5f7365637572655f636f617374616c5f63697479": {
+"frame": &"frame_secure",
+"position": Vector2(1320, 180)
+},
+"node_6f626a5f73757070726573735f6669726573": {
+"frame": &"frame_dispatch",
+"position": Vector2(820, 80)
+}
+}

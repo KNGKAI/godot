@@ -1,0 +1,252 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/meridian_manager.gd" id="1_5utco"]
+[ext_resource type="SimModule" path="res://resources/terraforming_colony_sim.tres" id="2_o7xsr"]
+[ext_resource type="SimModule" path="res://resources/mining_fleet_sim.tres" id="3_53tea"]
+[ext_resource type="MissionData" path="res://resources/mission_meridian_expansion.tres" id="4_5br7h"]
+[ext_resource type="WorldPartitionManifest" path="res://baked_cells/macro_1/manifest.tres" id="5_b7jdt"]
+[ext_resource type="PackedScene" path="res://scenes/ore_hauler.tscn" id="6_yxb6j"]
+[ext_resource type="PackedScene" path="res://scenes/survey_drone.tscn" id="7_3haap"]
+[ext_resource type="BoxMesh" path="res://resources/hauler_proxy_mesh.tres" id="8_dcrka"]
+[ext_resource type="SphereMesh" path="res://resources/survey_drone_proxy_mesh.tres" id="9_8xlq3"]
+[ext_resource type="Script" path="res://scripts/commander_rig_controller.gd" id="10_qy8gp"]
+[ext_resource type="Script" path="res://scripts/orbital_rts_controller.gd" id="11_3dm8t"]
+
+[sub_resource type="Environment" id="Environment_33os3"]
+background_mode = 1
+background_color = Color(0.18, 0.09, 0.05, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.45, 0.28, 0.2, 1)
+ambient_light_energy = 0.9
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_eb0nb"]
+size = Vector3(12000, 1, 600)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k4j47"]
+albedo_color = Color(0.42, 0.22, 0.14, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_qc84w"]
+material = SubResource("StandardMaterial3D_k4j47")
+size = Vector3(12000, 0.1, 200)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_40g40"]
+albedo_color = Color(0.75, 0.82, 0.88, 1)
+metallic = 0.5
+roughness = 0.25
+
+[sub_resource type="SphereMesh" id="SphereMesh_fsl6o"]
+material = SubResource("StandardMaterial3D_40g40")
+radius = 10.0
+height = 10.0
+is_hemisphere = true
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_535x7"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="Animation" id="Animation_eevy8"]
+length = 2.0
+tracks/0/type = "world_state"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("WorldState:colony.dome_beacon_energy")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.5),
+"transitions": PackedFloat32Array(1, 1),
+"values": [0.6, 2.5]
+}
+tracks/1/type = "event_bus"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("EventBus:colony.telemetry_linked")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.2),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"event_id": &"colony.telemetry_linked",
+"payload": {
+"cutscene": true
+}
+}]
+}
+tracks/2/type = "actor_command"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ActorRegistry:commander_fp")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.05),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"action_id": &"camera.cutscene_zoom",
+"actor_id": &"commander_fp",
+"payload": {
+"fov": 48.0,
+"marker_id": &"MarkerCommandDeck"
+}
+}]
+}
+tracks/3/type = "actor_command"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ActorRegistry:orbital_rts")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.05),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"action_id": &"camera.cutscene_zoom",
+"actor_id": &"orbital_rts",
+"payload": {
+"marker_id": &"MarkerCommandDeck",
+"ortho_size": 20.0
+}
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_4yax6"]
+_data = {
+&"colony_quota_cutscene": SubResource("Animation_eevy8")
+}
+
+[node name="OutpostMeridian" type="Node3D" unique_id=1107158053]
+script = ExtResource("1_5utco")
+colony_module = ExtResource("2_o7xsr")
+fleet_module = ExtResource("3_53tea")
+meridian_mission = ExtResource("4_5br7h")
+partition_manifest = ExtResource("5_b7jdt")
+hauler_prefab = ExtResource("6_yxb6j")
+drone_prefab = ExtResource("7_3haap")
+hauler_proxy_mesh = ExtResource("8_dcrka")
+drone_proxy_mesh = ExtResource("9_8xlq3")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=18600785]
+environment = SubResource("Environment_33os3")
+
+[node name="CraterSun" type="DirectionalLight3D" parent="." unique_id=1351817816]
+transform = Transform3D(0.90630776, -0.24240388, 0.34618863, 0, 0.81915206, 0.57357645, -0.42261827, -0.5198368, 0.74240386, 0, 0, 0)
+light_color = Color(1, 0.85, 0.72, 1)
+light_energy = 1.35
+shadow_enabled = true
+
+[node name="CraterFloor" type="StaticBody3D" parent="." unique_id=1719355096]
+
+[node name="FloorCollider" type="CollisionShape3D" parent="CraterFloor" unique_id=1782378595]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2500, -0.5, 0)
+shape = SubResource("BoxShape3D_eb0nb")
+
+[node name="RegolithSurface" type="MeshInstance3D" parent="CraterFloor" unique_id=1024779433]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2500, 0, 0)
+mesh = SubResource("BoxMesh_qc84w")
+
+[node name="HabitatCore" type="Node3D" parent="." unique_id=1090117956]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -22)
+
+[node name="SandboxActor" type="SandboxActor" parent="HabitatCore" unique_id=1093936460]
+actor_id = &"habitat_core"
+
+[node name="DomeMesh" type="MeshInstance3D" parent="HabitatCore" unique_id=1956237887]
+mesh = SubResource("SphereMesh_fsl6o")
+
+[node name="DomeBeacon" type="OmniLight3D" parent="HabitatCore" unique_id=757973208]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
+light_color = Color(1, 0.55, 0.15, 1)
+light_energy = 2.0
+omni_range = 45.0
+
+[node name="MarkerCommandDeck" type="Marker3D" parent="." unique_id=815827851]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, -6)
+
+[node name="MarkerScrubberBay" type="Marker3D" parent="." unique_id=398174416]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.1, -4)
+
+[node name="MarkerRoverGarage" type="Marker3D" parent="." unique_id=1987048342]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.1, -4)
+
+[node name="CommanderFP" type="CharacterBody3D" parent="." unique_id=221450259]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, -3)
+script = ExtResource("10_qy8gp")
+
+[node name="Collider" type="CollisionShape3D" parent="CommanderFP" unique_id=1419560122]
+shape = SubResource("CapsuleShape3D_535x7")
+
+[node name="Camera3D" type="Camera3D" parent="CommanderFP" unique_id=518281245]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 0)
+current = true
+
+[node name="SandboxActor" type="SandboxActor" parent="CommanderFP" unique_id=2067008118]
+actor_id = &"commander_fp"
+tags = Array[StringName]([&"commander"])
+
+[node name="StreamingInvoker" type="StreamingInvoker" parent="CommanderFP" unique_id=785723373]
+lookahead = 3.5
+
+[node name="OrbitalRTS" type="Node3D" parent="." unique_id=1976027261]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 55, -3)
+script = ExtResource("11_3dm8t")
+
+[node name="Camera3D" type="Camera3D" parent="OrbitalRTS" unique_id=1787432783]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
+projection = 1
+size = 42.0
+
+[node name="SandboxActor" type="SandboxActor" parent="OrbitalRTS" unique_id=310133690]
+actor_id = &"orbital_rts"
+tags = Array[StringName]([&"commander"])
+
+[node name="StreamingInvoker" type="StreamingInvoker" parent="OrbitalRTS" unique_id=1272422791]
+lookahead = 2.0
+
+[node name="CutsceneAnimationPlayer" type="AnimationPlayer" parent="." unique_id=431300111]
+libraries/ = SubResource("AnimationLibrary_4yax6")
+
+[node name="CommandDeckTerminal" type="TerminalDisplay3D" parent="." unique_id=1708086656]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, -9)
+title = "ORBITAL COMMAND DECK [ADMIN: colony.*, fleet.*, view.*, sim.*]"
+screen_size = Vector2(2.4, 1.4)
+actor_path = NodePath("../CommanderFP/SandboxActor")
+permission_tier = 2
+
+[node name="ScrubberBayTerminal" type="TerminalDisplay3D" parent="." unique_id=1470733831]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.65, -7)
+title = "ATMOSPHERIC SCRUBBER BAY [USER: colony.scrubber_boost]"
+screen_size = Vector2(2, 1.2)
+actor_path = NodePath("../CommanderFP/SandboxActor")
+allowed_namespaces = Array[StringName]([&"colony", &"help"])
+
+[node name="RoverTelemetryTerminal" type="TerminalDisplay3D" parent="." unique_id=1735562215]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.65, -7)
+title = "PREDICTIVE TELEMETRY & ROVER BAY [ADMIN: sim.rewind, sim.speed]"
+screen_size = Vector2(2.1, 1.25)
+actor_path = NodePath("../CommanderFP/SandboxActor")
+permission_tier = 2
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=10766788]
+
+[node name="Panel" type="PanelContainer" parent="HUD" unique_id=1421890437]
+custom_minimum_size = Vector2(860, 118)
+offset_left = 18.0
+offset_top = 18.0
+offset_right = 18.0
+offset_bottom = 18.0
+
+[node name="Margin" type="MarginContainer" parent="HUD/Panel" unique_id=1117928853]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="TelemetryLabel" type="RichTextLabel" parent="HUD/Panel/Margin" unique_id=1778696436]
+layout_mode = 2
+bbcode_enabled = true
+text = "Initializing Outpost Meridian..."
+fit_content = true
+scroll_active = false
