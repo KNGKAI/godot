@@ -1,0 +1,8 @@
+[gd_resource type="MissionData" format=3]
+
+[ext_resource type="SequenceData" path="res://sequence.tres" id="1"]
+
+[resource]
+mission_id = &"fixture.mission"
+on_start_sequence = ExtResource("1")
+_editor_graph_meta = {"entry": {"position": Vector2(10, 12)}}

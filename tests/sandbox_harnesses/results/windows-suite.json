@@ -1,0 +1,154 @@
+{
+  "passed": 1496,
+  "failed": 0,
+  "skipped": 3,
+  "skipped_cases": [
+    "[SceneTree][DDSSaver] Save DDS - Save valid image with mipmap",
+    "[SceneTree][DDSSaver] Save DDS - Save valid image with BPTC and S3TC compression",
+    "Pending tests are skipped"
+  ],
+  "assertions": 547603,
+  "gate_cases": {
+    "1": [
+      {
+        "case": "[SandboxCore][Gate1] Multi-Clock Isolation Test (50x Fast-Forward & 0x Paused)",
+        "assertions": 14
+      }
+    ],
+    "2": [
+      {
+        "case": "[SandboxSim][Gate2] 10,000 Consecutive Ticks Across 8 Concurrent SimModules on WorkerThreadPool",
+        "assertions": 65
+      }
+    ],
+    "3": [
+      {
+        "case": "[Sandbox][Gate3] Domain Agnosticism across 1st-Person and RTS Archetypes",
+        "assertions": 46
+      },
+      {
+        "case": "[SceneTree][Sandbox][Gate3] Mission lifecycle sequences play and release a wait from the event bus",
+        "assertions": 8
+      },
+      {
+        "case": "[SceneTree][Sandbox][Gate3] An event released during a fork keeps the emitting branch alive",
+        "assertions": 4
+      }
+    ],
+    "4": [
+      {
+        "case": "[SceneTree][SandboxTerminal][Gate4] Four monitors have independent 2D render targets and CLI state",
+        "assertions": 49
+      },
+      {
+        "case": "[SceneTree][SandboxTerminal][Gate4] The active monitor owns the actor lock and command permissions",
+        "assertions": 17
+      },
+      {
+        "case": "[SceneTree][SandboxTerminal][Gate4] Focus directs keys, shortcuts and scrolling only to the terminal",
+        "assertions": 46
+      }
+    ],
+    "5": [
+      {
+        "case": "[SandboxCore][Gate5] Save Deserialization RCE Rejection & Schema v2 Round-Trip",
+        "assertions": 27
+      },
+      {
+        "case": "[SandboxCore][Gate5] Debug WebSocket Handshake 403 Forbidden (CSWSH & DNS Rebinding)",
+        "assertions": 9
+      },
+      {
+        "case": "[SandboxCore][Gate5] CommandBus Permission Tiers, Namespace Whitelist, & 512-Byte Cap",
+        "assertions": 11
+      },
+      {
+        "case": "[SandboxStreaming][Gate5] Registration atomically replaces a snapshot of validated cells",
+        "assertions": 10
+      },
+      {
+        "case": "[SandboxStreaming][Gate5] All bundle slots validate project paths before normalization",
+        "assertions": 22
+      }
+    ],
+    "6": [
+      {
+        "case": "[SceneTree][SandboxStreaming][Gate6] Staged batches respect an expired deadline and preserve the previous LOD on failure",
+        "assertions": 33
+      },
+      {
+        "case": "[SceneTree][SandboxStreaming][Gate6] Cancelled cells balance shared resource loader requests",
+        "assertions": 6
+      },
+      {
+        "case": "[SceneTree][SandboxStreaming][Gate6] HLOD swaps supply complementary screen-door uniforms to live materials",
+        "assertions": 17
+      },
+      {
+        "case": "[SceneTree][SandboxStreaming][Gate6] Invoker keeps its velocity and world position over repeated origin shifts",
+        "assertions": 45
+      },
+      {
+        "case": "[SceneTree][SandboxStreaming][Gate6] Pinning loads scene and collision assets and eviction releases them",
+        "assertions": 38
+      }
+    ],
+    "7": [
+      {
+        "case": "[SceneTree][SandboxBubble][Gate7] Traverse 2,000 moving SoA agents with a fixed pool",
+        "assertions": 2940
+      },
+      {
+        "case": "[SceneTree][SandboxBubble][Gate7] Enter and exit boundaries keep their tier throughout the hysteresis band",
+        "assertions": 132
+      },
+      {
+        "case": "[SceneTree][SandboxBubble][Gate7] Five hundred round trips preserve actor state and independent pin owners",
+        "assertions": 10002
+      },
+      {
+        "case": "[SceneTree][SandboxBubble][Gate7] Saving flushes live state and loading resynchronizes the active shell",
+        "assertions": 58
+      },
+      {
+        "case": "[SceneTree][SandboxBubble][Gate7] A floating-origin shift preserves absolute positions across all three tiers",
+        "assertions": 17
+      }
+    ],
+    "8": [
+      {
+        "case": "[SceneTree][SandboxEditor][Gate8] Mission canvas authors a branching fifteen-node mission, synchronized undo and live trace",
+        "assertions": 34
+      },
+      {
+        "case": "[SceneTree][SandboxEditor][Gate8] Sequence canvas authors a parallel fork, guarded alternatives and frame placement",
+        "assertions": 12
+      },
+      {
+        "case": "[SceneTree][SandboxEditor][Gate8] An explicit join waits for both parallel completions and advances once",
+        "assertions": 14
+      },
+      {
+        "case": "[SandboxEditor][Gate8] Discovery follows the lifetime of loaded module declarations",
+        "assertions": 3
+      },
+      {
+        "case": "[SandboxEditor][Gate8] Release customization strips only the exported graph layout",
+        "assertions": 11
+      },
+      {
+        "case": "[Editor][SandboxEditor][Gate8] Typed search groups names and flags missing, deprecated and incompatible keys",
+        "assertions": 17
+      },
+      {
+        "case": "[Editor][SandboxEditor][Gate8] An armed timeline picker resolves the actor or marker at the viewport click",
+        "assertions": 14
+      },
+      {
+        "case": "[SandboxEditor][Gate8] Strict audit traverses mission subresources and all three native timeline reference formats",
+        "assertions": 8
+      }
+    ]
+  },
+  "editor_sha256": "0a0c54b0710e020df10ca05ea948c36dead3240f029c39c0a00bb07b6b6533fa"
+}

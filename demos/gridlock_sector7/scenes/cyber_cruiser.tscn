@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/hydrated_vehicle_controller.gd" id="1_h6iqf"]
+[ext_resource type="BoxMesh" path="res://resources/cruiser_proxy_mesh.tres" id="2_j07wy"]
+
+[node name="CyberCruiser" type="Node3D" unique_id=414014978]
+script = ExtResource("1_h6iqf")
+
+[node name="Hydratable" type="HydratableActor" parent="." unique_id=1020526031]
+archetype_id = &"cyber_cruiser"
+hydrate_radius = 95.0
+dehydrate_radius = 120.0
+
+[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=1538064527]
+mesh = ExtResource("2_j07wy")
+
+[node name="Headlight" type="OmniLight3D" parent="." unique_id=1664775674]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 2.2)
+light_color = Color(0.2, 0.95, 1, 1)
+light_energy = 1.5
+omni_range = 12.0

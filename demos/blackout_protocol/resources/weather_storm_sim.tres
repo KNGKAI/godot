@@ -1,0 +1,8 @@
+[gd_resource type="SimModule" script_class="WeatherStormSim" format=3]
+
+[ext_resource type="Script" path="res://scripts/weather_storm_sim.gd" id="1_0h33h"]
+
+[resource]
+module_id = &"weather_storm_sim"
+tick_rate_hz = 10.0
+script = ExtResource("1_0h33h")

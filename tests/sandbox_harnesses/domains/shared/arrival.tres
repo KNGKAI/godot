@@ -1,0 +1,14 @@
+[gd_resource type="Animation" format=3]
+
+[resource]
+resource_name = "arrival"
+length = 0.5
+tracks/0/type = "world_state"
+tracks/0/path = NodePath("WorldState:arrival.signal")
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.5), "values": [0.0, 1.0]}
+tracks/1/type = "actor_command"
+tracks/1/path = NodePath("ActorRegistry:observer")
+tracks/1/keys = {"times": PackedFloat32Array(0.125), "values": [{"actor_id": &"observer", "action_id": &"focus_beacon", "payload": {"sector": 7}}]}
+tracks/2/type = "event_bus"
+tracks/2/path = NodePath("EventBus:arrival.beacon")
+tracks/2/keys = {"times": PackedFloat32Array(0.375), "values": [{"event_id": &"arrival.beacon", "payload": {"sector": 7}}]}

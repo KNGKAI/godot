@@ -1,0 +1,4 @@
+[gd_resource type="SandboxSchemaRegistry" format=3]
+
+[resource]
+events_data = [{"event_id": &"fixture.release"}]

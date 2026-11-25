@@ -1,0 +1,18 @@
+config_version=5
+
+[application]
+config/name="Sandbox editor verification"
+run/main_scene="res://runtime.tscn"
+
+[editor]
+run/main_run_args="--headless"
+
+[editor_plugins]
+enabled=PackedStringArray("res://addons/bridge_probe/plugin.cfg")
+
+[sandbox]
+schema/registry_path="res://schema.tres"
+schema/strict_mode=true
+
+[rendering]
+renderer/rendering_method="gl_compatibility"

@@ -1,0 +1,19 @@
+[gd_resource type="SequenceData" format=3]
+
+[sub_resource type="ActionSetState" id="ActionSetState_ngebg"]
+step_uuid = &"step_status_boot"
+key = &"mission.expansion_status"
+value = "awaiting_telemetry"
+
+[resource]
+sequence_id = &"seq_meridian_boot"
+entry_step_uuid = &"step_status_boot"
+steps = Array[SequenceAction]([SubResource("ActionSetState_ngebg")])
+_editor_graph_meta = {
+"entry": {
+"position": Vector2(40, 120)
+},
+"node_737465705f7374617475735f626f6f74": {
+"position": Vector2(340, 100)
+}
+}

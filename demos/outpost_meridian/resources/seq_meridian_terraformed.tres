@@ -1,0 +1,28 @@
+[gd_resource type="SequenceData" format=3]
+
+[sub_resource type="ActionSetState" id="ActionSetState_d5udn"]
+step_uuid = &"step_mark_complete"
+next_steps = PackedStringArray("step_beacon_full")
+key = &"mission.expansion_status"
+value = "sector_terraformed"
+
+[sub_resource type="ActionSetState" id="ActionSetState_m7nk7"]
+step_uuid = &"step_beacon_full"
+key = &"colony.dome_beacon_energy"
+value = 2.5
+
+[resource]
+sequence_id = &"seq_meridian_terraformed"
+entry_step_uuid = &"step_mark_complete"
+steps = Array[SequenceAction]([SubResource("ActionSetState_d5udn"), SubResource("ActionSetState_m7nk7")])
+_editor_graph_meta = {
+"entry": {
+"position": Vector2(40, 120)
+},
+"node_737465705f626561636f6e5f66756c6c": {
+"position": Vector2(660, 100)
+},
+"node_737465705f6d61726b5f636f6d706c657465": {
+"position": Vector2(340, 100)
+}
+}

@@ -158,6 +158,11 @@
 #endif // TOOLS_ENABLED && !GDSCRIPT_NO_LSP
 #endif // MODULE_GDSCRIPT_ENABLED
 
+#ifdef MODULE_SANDBOX_CORE_ENABLED
+#include "modules/sandbox_core/event_bus.h"
+#include "modules/sandbox_core/sandbox_clock.h"
+#endif // MODULE_SANDBOX_CORE_ENABLED
+
 /* Static members */
 
 // Singletons
@@ -5025,6 +5030,12 @@ bool Main::iteration() {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
+#ifdef MODULE_SANDBOX_CORE_ENABLED
+		if (SandboxClock::get_singleton()) {
+			SandboxClock::get_singleton()->notify_physics_step_start(physics_step * time_scale);
+		}
+#endif // MODULE_SANDBOX_CORE_ENABLED
+
 		// Prepare the fixed timestep interpolated nodes BEFORE they are updated
 		// by the physics server, otherwise the current and previous transforms
 		// may be the same, and no interpolation takes place.
@@ -5101,6 +5112,16 @@ bool Main::iteration() {
 	if (Input::get_singleton()->is_agile_input_event_flushing()) {
 		Input::get_singleton()->flush_buffered_events();
 	}
+
+#ifdef MODULE_SANDBOX_CORE_ENABLED
+	GodotProfileZoneGrouped(_profile_zone, "sandbox_clock->advance");
+	if (SandboxClock::get_singleton()) {
+		SandboxClock::get_singleton()->advance(process_step, physics_step, advance.physics_steps);
+	}
+	if (EventBus::get_singleton()) {
+		EventBus::get_singleton()->flush_deferred();
+	}
+#endif // MODULE_SANDBOX_CORE_ENABLED
 
 	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
 

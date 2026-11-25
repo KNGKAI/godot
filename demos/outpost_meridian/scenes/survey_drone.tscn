@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/hydrated_hauler_controller.gd" id="1_ja47c"]
+[ext_resource type="SphereMesh" path="res://resources/survey_drone_proxy_mesh.tres" id="2_7x5gn"]
+
+[node name="SurveyDrone" type="Node3D" unique_id=1138770423]
+script = ExtResource("1_ja47c")
+
+[node name="Hydratable" type="HydratableActor" parent="." unique_id=1878632971]
+archetype_id = &"survey_drone"
+hydrate_radius = 80.0
+dehydrate_radius = 105.0
+
+[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=1897418631]
+mesh = ExtResource("2_7x5gn")

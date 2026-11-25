@@ -1,0 +1,99 @@
+{
+  "engine_sha256": "0a0c54b0710e020df10ca05ea948c36dead3240f029c39c0a00bb07b6b6533fa",
+  "shared_sha256": {
+    "actor.tscn": "b7ace3d7722aaaf7af29a4f987b578dbe1bcdb8aed691c6484a502daa0a0cb60",
+    "arrival.tres": "705143aa7625ffa533513eef1daee5feedf568b427887fe2586b222684d2d1f4",
+    "mission.tres": "deedd68520a2d2e3db7728d9e914b3a7c57c6354e09f387ef27f5230e2e7d953",
+    "probe.gd": "3fec330fd9a50db77756e527994e1b93b7623070a80c04629a04e48bbb536045",
+    "terminal.tscn": "8ae77d5306eda69ade68ed68af4aa14dceba95c096fffe427709081b5e3c73ff"
+  },
+  "hosts": [
+    {
+      "actions": [
+        "play_animation",
+        "focus_beacon"
+      ],
+      "animation_finished": [
+        "arrival"
+      ],
+      "camera_projection": "perspective",
+      "command": "mission.start arrival",
+      "completed_objectives": [
+        "locate_beacon"
+      ],
+      "events": [
+        "arrival.beacon",
+        "arrival.debrief"
+      ],
+      "failures": [],
+      "focus_value": 50.0,
+      "host": "first_person",
+      "interpolated": true,
+      "repeat_complete_ok": true,
+      "rig": "CharacterBody3D",
+      "signal_end": 1.0,
+      "terminal_locks": [
+        true,
+        false
+      ],
+      "terminal_status_ok": true,
+      "unknown_mission_error": 33,
+      "wait_released": true,
+      "staged_project_sha256": "acfd18970cdb30eaa3f6464becca9f5de44f8e2b64c9d136b9a6cbd094d42e9d",
+      "export": {
+        "exe_sha256": "d563551b597072688380b8e5e630b88630a47240f779e8d4cb3d211f10ac0549",
+        "pck_sha256": "cfcf81a38b9ba6feeae72dd0e55f18c38c210c007ad0a209ae57163c4860cb70",
+        "pck_bytes": 214892
+      },
+      "engine_diagnostics": [],
+      "engine_warnings": [
+        "WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy."
+      ],
+      "exit_code": 0
+    },
+    {
+      "actions": [
+        "play_animation",
+        "focus_beacon"
+      ],
+      "animation_finished": [
+        "arrival"
+      ],
+      "camera_projection": "orthogonal",
+      "command": "mission.start arrival",
+      "completed_objectives": [
+        "locate_beacon"
+      ],
+      "events": [
+        "arrival.beacon",
+        "arrival.debrief"
+      ],
+      "failures": [],
+      "focus_value": 4.0,
+      "host": "rts",
+      "interpolated": true,
+      "repeat_complete_ok": true,
+      "rig": "Camera3D",
+      "signal_end": 1.0,
+      "terminal_locks": [
+        true,
+        false
+      ],
+      "terminal_status_ok": true,
+      "unknown_mission_error": 33,
+      "wait_released": true,
+      "staged_project_sha256": "3cefd9716a42e4a9f141b799dfb6435363c473c1d1f987a16a146ceb35e39b6d",
+      "export": {
+        "exe_sha256": "d563551b597072688380b8e5e630b88630a47240f779e8d4cb3d211f10ac0549",
+        "pck_sha256": "886e2d2396df50d728e7b16eeadbc8e743712bc77736a8c4bbaee9adeae96fe8",
+        "pck_bytes": 214844
+      },
+      "engine_diagnostics": [],
+      "engine_warnings": [
+        "WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy."
+      ],
+      "exit_code": 0
+    }
+  ],
+  "release_template_sha256": "d563551b597072688380b8e5e630b88630a47240f779e8d4cb3d211f10ac0549"
+}

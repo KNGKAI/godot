@@ -1,0 +1,4 @@
+[gd_resource type="SandboxSchemaRegistry" format=3]
+
+[resource]
+state_keys_data = [{"key": &"district.power.load", "value_type": 3, "description": "District power demand"}, {"key": &"district.power.locked", "value_type": 1}]

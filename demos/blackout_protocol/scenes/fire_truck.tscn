@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/hydrated_emergency_vehicle.gd" id="1_t84p7"]
+[ext_resource type="BoxMesh" path="res://resources/fire_truck_proxy_mesh.tres" id="2_v58nt"]
+
+[node name="FireTruck" type="Node3D" unique_id=2010346963]
+script = ExtResource("1_t84p7")
+
+[node name="Hydratable" type="HydratableActor" parent="." unique_id=925728504]
+archetype_id = &"fire_truck"
+hydrate_radius = 130.0
+dehydrate_radius = 160.0
+
+[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=2146526064]
+mesh = ExtResource("2_v58nt")
+
+[node name="SirenLight" type="OmniLight3D" parent="." unique_id=1719613652]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+light_color = Color(1, 0.18, 0.12, 1)
+light_energy = 2.2
+omni_range = 16.0

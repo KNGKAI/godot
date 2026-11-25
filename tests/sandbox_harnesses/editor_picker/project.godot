@@ -1,0 +1,15 @@
+config_version=5
+
+[application]
+config/name="Sandbox editor picker verification"
+run/main_scene="res://world.tscn"
+
+[editor_plugins]
+enabled=PackedStringArray("res://addons/picker_probe/plugin.cfg")
+
+[sandbox]
+schema/registry_path="res://schema.tres"
+schema/strict_mode=true
+
+[rendering]
+renderer/rendering_method="gl_compatibility"

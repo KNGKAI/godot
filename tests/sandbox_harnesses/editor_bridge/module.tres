@@ -1,0 +1,5 @@
+[gd_resource type="SimModule" format=3]
+
+[resource]
+module_id = &"fixture.clock"
+tick_rate_hz = 5.0

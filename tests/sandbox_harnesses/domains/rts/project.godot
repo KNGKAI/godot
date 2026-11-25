@@ -1,0 +1,19 @@
+config_version=5
+
+[application]
+
+config/name="Gate 3 RTS"
+run/main_scene="res://world.tscn"
+
+[display]
+
+window/size/viewport_width=800
+window/size/viewport_height=600
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"

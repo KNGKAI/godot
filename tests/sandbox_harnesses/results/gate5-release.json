@@ -1,0 +1,67 @@
+{
+  "source_executable": "D:\\Projects\\godot\\bin\\phase8\\release-source\\bin\\godot.windows.template_release.x86_64.exe",
+  "sha256": "d563551b597072688380b8e5e630b88630a47240f779e8d4cb3d211f10ac0549",
+  "command": [
+    "D:\\Projects\\godot\\bin\\phase8\\release-audit\\project\\godot.windows.template_release.x86_64.exe",
+    "--headless",
+    "--log-file",
+    "D:\\Projects\\godot\\bin\\phase8\\release-audit\\godot.log",
+    "--",
+    "55589"
+  ],
+  "engine_report": {
+    "builtin_as_admin": {
+      "error_code": 4,
+      "ok": false,
+      "output": "Unknown command: 'dev.inspect'."
+    },
+    "builtin_as_dev": {
+      "error_code": 4,
+      "ok": false,
+      "output": "Permission tier is unavailable."
+    },
+    "builtin_dev_registered": false,
+    "control_port": 55592,
+    "control_started": true,
+    "custom_as_admin": {
+      "error_code": 4,
+      "ok": false,
+      "output": "Unknown command: 'probe.dev'."
+    },
+    "custom_dev_registered": false,
+    "listener_result": 4,
+    "listening": false,
+    "passed": true,
+    "pid": 28000,
+    "release": true,
+    "reported_port": 0,
+    "requested_port": 55589,
+    "token_empty": true,
+    "user_as_dev": {
+      "error_code": 4,
+      "ok": false,
+      "output": "Permission tier is unavailable."
+    },
+    "user_as_user": {
+      "error_code": 0,
+      "ok": true,
+      "output": "control"
+    }
+  },
+  "positive_control": [
+    [
+      "TCP",
+      "127.0.0.1:55592",
+      "0.0.0.0:0",
+      "LISTENING",
+      "28000"
+    ]
+  ],
+  "listener_samples_after_control_closed": [
+    [],
+    [],
+    []
+  ],
+  "requested_port_connect_ex": 10061,
+  "exit_code": 0
+}

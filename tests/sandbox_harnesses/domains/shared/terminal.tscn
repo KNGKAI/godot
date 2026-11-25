@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[node name="Terminal" type="TerminalDisplay3D"]
+title = "Arrival control"
+actor_path = NodePath("../Rig/Actor")
+permission_tier = 2
+allowed_namespaces = Array[StringName]([&"mission"])

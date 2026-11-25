@@ -1,0 +1,58 @@
+[gd_resource type="SequenceData" format=3]
+
+[sub_resource type="CondStateEquals" id="CondStateEquals_6epgd"]
+key = &"power.corp_sector_vented"
+expected = true
+
+[sub_resource type="ActionBranchCondition" id="ActionBranchCondition_4pb1t"]
+step_uuid = &"step_branch_check"
+condition = SubResource("CondStateEquals_6epgd")
+true_steps = PackedStringArray("step_mark_corp_vent")
+false_steps = PackedStringArray("step_mark_coolant")
+
+[sub_resource type="ActionSetState" id="ActionSetState_3yo5s"]
+step_uuid = &"step_mark_corp_vent"
+next_steps = PackedStringArray("step_restore_lights")
+key = &"mission.resolution_branch"
+value = "corp_surge_vented"
+
+[sub_resource type="ActionSetState" id="ActionSetState_5ognh"]
+step_uuid = &"step_mark_coolant"
+next_steps = PackedStringArray("step_restore_lights")
+key = &"mission.resolution_branch"
+value = "cryo_coolant_repaired"
+
+[sub_resource type="ActionSetState" id="ActionSetState_7egl2"]
+step_uuid = &"step_restore_lights"
+next_steps = PackedStringArray("step_green_wave")
+key = &"power.streetlights_dimmer"
+value = 1.25
+
+[sub_resource type="ActionRunCommand" id="ActionRunCommand_gxwcq"]
+step_uuid = &"step_green_wave"
+command_string = "traffic.override true"
+
+[resource]
+sequence_id = &"seq_grid_restored"
+entry_step_uuid = &"step_branch_check"
+steps = Array[SequenceAction]([SubResource("ActionBranchCondition_4pb1t"), SubResource("ActionSetState_3yo5s"), SubResource("ActionSetState_5ognh"), SubResource("ActionSetState_7egl2"), SubResource("ActionRunCommand_gxwcq")])
+_editor_graph_meta = {
+"entry": {
+"position": Vector2(40, 180)
+},
+"node_737465705f6272616e63685f636865636b": {
+"position": Vector2(340, 160)
+},
+"node_737465705f677265656e5f77617665": {
+"position": Vector2(1340, 160)
+},
+"node_737465705f6d61726b5f636f6f6c616e74": {
+"position": Vector2(680, 280)
+},
+"node_737465705f6d61726b5f636f72705f76656e74": {
+"position": Vector2(680, 60)
+},
+"node_737465705f726573746f72655f6c6967687473": {
+"position": Vector2(1020, 160)
+}
+}

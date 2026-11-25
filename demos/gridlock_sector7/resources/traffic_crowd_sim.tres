@@ -1,0 +1,9 @@
+[gd_resource type="SimModule" script_class="TrafficCrowdSim" format=3]
+
+[ext_resource type="Script" path="res://scripts/traffic_crowd_sim.gd" id="1_l55nx"]
+
+[resource]
+module_id = &"traffic_crowd_sim"
+tick_rate_hz = 5.0
+priority = 1
+script = ExtResource("1_l55nx")

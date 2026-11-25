@@ -1,0 +1,19 @@
+[gd_resource type="SequenceData" format=3]
+
+[sub_resource type="ActionSetState" id="ActionSetState_v46gm"]
+step_uuid = &"step_phase_all_clear"
+key = &"mission.emergency_phase"
+value = "city_secured_all_clear"
+
+[resource]
+sequence_id = &"seq_all_clear"
+entry_step_uuid = &"step_phase_all_clear"
+steps = Array[SequenceAction]([SubResource("ActionSetState_v46gm")])
+_editor_graph_meta = {
+"entry": {
+"position": Vector2(40, 120)
+},
+"node_737465705f70686173655f616c6c5f636c656172": {
+"position": Vector2(340, 100)
+}
+}

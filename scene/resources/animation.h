@@ -57,6 +57,9 @@ public:
 		TYPE_BEZIER, // Bezier curve.
 		TYPE_AUDIO,
 		TYPE_ANIMATION,
+		TYPE_EVENT_BUS,
+		TYPE_WORLD_STATE,
+		TYPE_ACTOR_COMMAND,
 	};
 
 	// TODO: Reorder the MAKIMA next to the CUBIC in Godot 5, since the enum values are serialized and cannot be changed without breaking compat.
@@ -244,6 +247,33 @@ private:
 
 		AnimationTrack() {
 			type = TYPE_ANIMATION;
+		}
+	};
+
+	/* SANDBOX CUSTOM TRACKS */
+
+	struct EventBusTrack : public Track {
+		LocalVector<TKey<Variant>> values;
+
+		EventBusTrack() {
+			type = TYPE_EVENT_BUS;
+		}
+	};
+
+	struct WorldStateTrack : public Track {
+		UpdateMode update_mode = UPDATE_CONTINUOUS;
+		LocalVector<TKey<Variant>> values;
+
+		WorldStateTrack() {
+			type = TYPE_WORLD_STATE;
+		}
+	};
+
+	struct ActorCommandTrack : public Track {
+		LocalVector<TKey<Variant>> values;
+
+		ActorCommandTrack() {
+			type = TYPE_ACTOR_COMMAND;
 		}
 	};
 
@@ -514,6 +544,15 @@ public:
 	Error blend_shape_track_get_key(int p_track, int p_key, float *r_blend) const;
 	Error try_blend_shape_track_interpolate(int p_track, double p_time, float *r_blend, bool p_backward = false) const;
 	float blend_shape_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
+
+	int event_bus_track_insert_key(int p_track, double p_time, const StringName &p_event_id, const Dictionary &p_payload = Dictionary());
+	StringName event_bus_track_get_key_event_id(int p_track, int p_key_idx) const;
+	Dictionary event_bus_track_get_key_payload(int p_track, int p_key_idx) const;
+
+	int world_state_track_insert_key(int p_track, double p_time, const Variant &p_value, real_t p_transition = 1.0);
+	Variant world_state_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
+
+	int actor_command_track_insert_key(int p_track, double p_time, const StringName &p_actor_id, const StringName &p_action_id, const Dictionary &p_payload = Dictionary(), bool p_control_lock = false, bool p_locked = true);
 
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;

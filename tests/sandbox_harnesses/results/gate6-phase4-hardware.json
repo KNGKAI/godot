@@ -1,0 +1,147 @@
+{
+  "gpu": "NVIDIA GeForce GTX 1050 Ti",
+  "manifest_sha256": "46997b657dc1138b38de6f842a3db97e4753bcf8c79203915545b5180fc65877",
+  "timing_executable_sha256": "680b7a897bd253656886b7aa259c5065d3ec6256ecc97fe9d219bad3e182a8c7",
+  "memory_executable_sha256": "a39e6f6ce208be49c255d72dc16a8fa4f77ac76f5a226d60ef0f03e2ba831cc3",
+  "clean_timing": {
+    "frames": 20735,
+    "p99_frame_ms": 9.528,
+    "max_activation_ms": 1.926,
+    "frames_activation_over_2ms": 0,
+    "before_all_heap_bytes": 41139088,
+    "peak_dense_all_heap_bytes": 52905248,
+    "after_all_heap_bytes": 42187664,
+    "wall_average_m_s": 89.9966381191543,
+    "physics_speed_m_s": 90.0,
+    "origin_shifts_x_m": [
+      3064.5,
+      5113.5,
+      7161.0,
+      9208.5,
+      11257.5,
+      13305.0,
+      15352.5
+    ]
+  },
+  "diagnostic_timing": {
+    "passed": false,
+    "frames_activation_over_2ms": 81,
+    "p99_frame_ms": 17.22,
+    "max_activation_ms": 13.787
+  },
+  "visual_observations": {
+    "readbacks": 15397,
+    "visible_fade_frames": 4329,
+    "terrain_pixels_checked": 2982473240,
+    "marker_samples": 676676,
+    "failed_visual_frames": 0,
+    "shift_window_frames": 28,
+    "failed_shift_frames": 0
+  },
+  "vulkan_heap_allocations": {
+    "after": {
+      "device_local_bytes": 36940688,
+      "nonlocal_bytes": 4198400,
+      "total_bytes": 41139088
+    },
+    "before": {
+      "device_local_bytes": 36940688,
+      "nonlocal_bytes": 4198400,
+      "total_bytes": 41139088
+    },
+    "cold": {
+      "device_local_bytes": 36940688,
+      "nonlocal_bytes": 3149824,
+      "total_bytes": 40090512
+    },
+    "dense_peak": {
+      "device_local_bytes": 49772560,
+      "nonlocal_bytes": 4198400,
+      "total_bytes": 53970960
+    }
+  },
+  "wddm_process_memory": {
+    "adapter_luid": "0xe761",
+    "samples": 293,
+    "after": {
+      "samples": 2,
+      "dedicated_bytes": {
+        "min": 213024768,
+        "max": 213024768,
+        "last": 213024768
+      },
+      "shared_bytes": {
+        "min": 141434880,
+        "max": 141434880,
+        "last": 141434880
+      }
+    },
+    "before": {
+      "samples": 2,
+      "dedicated_bytes": {
+        "min": 213024768,
+        "max": 213024768,
+        "last": 213024768
+      },
+      "shared_bytes": {
+        "min": 141418496,
+        "max": 141418496,
+        "last": 141418496
+      }
+    },
+    "cold": {
+      "samples": 2,
+      "dedicated_bytes": {
+        "min": 214196224,
+        "max": 214196224,
+        "last": 214196224
+      },
+      "shared_bytes": {
+        "min": 137969664,
+        "max": 137969664,
+        "last": 137969664
+      }
+    },
+    "dense_peak": {
+      "dedicated_bytes": 213024768,
+      "shared_bytes": 141434880
+    }
+  },
+  "checks": {
+    "device_local_rose_in_town": true,
+    "device_local_returned_exactly": true,
+    "matching_scene_batches": true,
+    "all_town_atlases_released": true,
+    "texture_bytes_equal": true,
+    "buffer_bytes_equal": true,
+    "diagnostic_all_heap_returned_exactly": true,
+    "wddm_dedicated_returned_exactly": true,
+    "clean_p99_within_16_6_ms": true,
+    "clean_activation_within_2_ms": true,
+    "clean_all_heap_returned_exactly": false,
+    "clean_run_reported_pass": false,
+    "visual_run_reported_pass": true
+  },
+  "required_checks": {
+    "complete_16_km_square": true,
+    "complete_route_at_90_m_s": true,
+    "at_least_four_origin_shifts": true,
+    "ordinary_frame_log_verified": true,
+    "no_ordinary_activation_overruns": true,
+    "every_visual_frame_checked": true,
+    "active_visible_transitions": true,
+    "no_rendered_gaps": true,
+    "no_rendered_shift_errors": true,
+    "device_local_rose_in_town": true,
+    "device_local_returned_exactly": true,
+    "matching_scene_batches": true,
+    "all_town_atlases_released": true,
+    "texture_bytes_equal": true,
+    "buffer_bytes_equal": true,
+    "wddm_dedicated_returned_exactly": true,
+    "clean_p99_within_16_6_ms": true,
+    "clean_activation_within_2_ms": true,
+    "visual_run_reported_pass": true
+  },
+  "gate6_passed": true
+}

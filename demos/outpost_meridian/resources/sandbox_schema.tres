@@ -1,0 +1,138 @@
+[gd_resource type="SandboxSchemaRegistry" format=3]
+
+[resource]
+state_keys_data = Array[Dictionary]([{
+"default_value": 140.0,
+"deprecated": false,
+"description": "Colony solar capacitor reserve in MWh.",
+"dynamically_discovered": false,
+"key": &"colony.battery_mwh",
+"range_hint": Vector2(0, 500),
+"value_type": 3
+}, {
+"default_value": 0.5,
+"deprecated": false,
+"description": "Habitat dome telemetry beacon brightness.",
+"dynamically_discovered": false,
+"key": &"colony.dome_beacon_energy",
+"range_hint": Vector2(0, 3),
+"value_type": 3
+}, {
+"default_value": 68.0,
+"deprecated": false,
+"description": "Habitat atmospheric O2 partial pressure in kPa (target >= 95 kPa).",
+"dynamically_discovered": false,
+"key": &"colony.o2_pressure_kpa",
+"range_hint": Vector2(0, 120),
+"value_type": 3
+}, {
+"default_value": 45.0,
+"deprecated": false,
+"description": "Processed regolith titanium/ice ore in metric tons (target >= 250 t).",
+"dynamically_discovered": false,
+"key": &"colony.refined_ore_tons",
+"range_hint": Vector2(0, 1000),
+"value_type": 3
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True when atmospheric O2 scrubbers are running in high-output overdrive.",
+"dynamically_discovered": false,
+"key": &"colony.scrubber_overdrive",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True when electromagnetic dust shields are active.",
+"dynamically_discovered": false,
+"key": &"colony.storm_shield_active",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}, {
+"default_value": 300,
+"deprecated": false,
+"description": "Total simulated mining haulers and survey drones in the crater.",
+"dynamically_discovered": false,
+"key": &"fleet.active_units",
+"range_hint": Vector2(0, 2000),
+"value_type": 2
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True when crater mining haulers are running at high-speed convoy overclock.",
+"dynamically_discovered": false,
+"key": &"fleet.convoy_overclock",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}, {
+"default_value": 10.0,
+"deprecated": false,
+"description": "Target speed of autonomous regolith haulers in m/s.",
+"dynamically_discovered": false,
+"key": &"fleet.hauler_speed_mps",
+"range_hint": Vector2(0, 45),
+"value_type": 3
+}, {
+"default_value": "initializing",
+"deprecated": false,
+"description": "Current phase of the Outpost Meridian expansion protocol.",
+"dynamically_discovered": false,
+"key": &"mission.expansion_status",
+"range_hint": Vector2(0, 0),
+"value_type": 4
+}, {
+"default_value": false,
+"deprecated": false,
+"description": "True once orbital crater telemetry is synchronized at the Command Deck.",
+"dynamically_discovered": false,
+"key": &"mission.telemetry_linked",
+"range_hint": Vector2(0, 0),
+"value_type": 1
+}])
+events_data = Array[Dictionary]([{
+"deprecated": false,
+"description": "Emitted when hauler fleet enters convoy overclock.",
+"dynamically_discovered": false,
+"event_id": &"colony.convoy_recalled",
+"payload_schema": {
+"speed_mps": 3
+}
+}, {
+"deprecated": false,
+"description": "Emitted when colony O2 >= 95 kPa and refined ore >= 250 tons.",
+"dynamically_discovered": false,
+"event_id": &"colony.quota_reached",
+"payload_schema": {
+"o2_kpa": 3,
+"ore_tons": 3
+}
+}, {
+"deprecated": false,
+"description": "Emitted when O2 scrubbers enter overdrive.",
+"dynamically_discovered": false,
+"event_id": &"colony.scrubber_boosted",
+"payload_schema": {
+"overdrive": 1
+}
+}, {
+"deprecated": false,
+"description": "Emitted when orbital telemetry is synchronized.",
+"dynamically_discovered": false,
+"event_id": &"colony.telemetry_linked",
+"payload_schema": {
+"crater": 4
+}
+}, {
+"deprecated": false,
+"description": "Emitted when the rover crosses a 2048m OriginShifter threshold.",
+"dynamically_discovered": false,
+"event_id": &"fleet.origin_crossed",
+"payload_schema": {
+"shifts": 2
+}
+}])
+actor_ids_data = PackedStringArray("commander_fp", "habitat_core", "orbital_rts")
+tags_data = PackedStringArray("commander", "harvester")
+marker_ids_data = PackedStringArray("MarkerCommandDeck", "MarkerRoverGarage", "MarkerScrubberBay")
+archetype_ids_data = PackedStringArray("ore_hauler", "survey_drone")

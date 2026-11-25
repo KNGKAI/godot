@@ -1,0 +1,26 @@
+diff --git a/drivers/vulkan/rendering_device_driver_vulkan.cpp b/drivers/vulkan/rendering_device_driver_vulkan.cpp
+index 138adf0e91..a948b6ef2a 100644
+--- a/drivers/vulkan/rendering_device_driver_vulkan.cpp
++++ b/drivers/vulkan/rendering_device_driver_vulkan.cpp
+@@ -7346,10 +7346,21 @@ uint64_t RenderingDeviceDriverVulkan::get_total_memory_used() {
+ 	vmaGetHeapBudgets(allocator, budgets);
+ 
+ 	uint64_t total_memory_used = 0;
++	uint64_t local_bytes = 0;
+ 	for (uint32_t i = 0; i < memory_properties->memoryHeapCount; i++) {
+ 		total_memory_used += budgets[i].statistics.allocationBytes;
++		if (memory_properties->memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
++			local_bytes += budgets[i].statistics.allocationBytes;
++		}
+ 	}
+ 
++	thread_local uint64_t last_local = UINT64_MAX;
++	thread_local uint64_t last_total = UINT64_MAX;
++	if (last_local != local_bytes || last_total != total_memory_used) {
++		print_line(vformat("GATE6_HEAPS usec=%d device_local=%d nonlocal=%d total=%d", OS::get_singleton()->get_ticks_usec(), local_bytes, total_memory_used - local_bytes, total_memory_used));
++		last_local = local_bytes;
++		last_total = total_memory_used;
++	}
+ 	return total_memory_used;
+ }
+ 

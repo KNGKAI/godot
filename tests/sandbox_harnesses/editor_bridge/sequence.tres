@@ -1,0 +1,11 @@
+[gd_resource type="SequenceData" format=3]
+
+[sub_resource type="ActionWaitEvent" id="Wait"]
+step_uuid = &"hold"
+expected_event_id = &"fixture.release"
+
+[resource]
+sequence_id = &"fixture"
+entry_step_uuid = &"hold"
+steps = [SubResource("Wait")]
+_editor_graph_meta = {"hold": {"position": Vector2(45, 60)}}

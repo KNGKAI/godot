@@ -44,6 +44,7 @@ class CanvasLayer;
 class Control;
 class Label;
 class SceneTreeTimer;
+class SubViewport;
 class Viewport;
 class Window;
 class World2D;
@@ -293,6 +294,8 @@ private:
 	bool local_input_handled = false;
 	bool propagate_shortcuts_to_parent = false;
 	bool shortcut_use_focus_owner = true;
+	ObjectID terminal_focus_viewport_id;
+	Callable terminal_focus_release_callback;
 
 	Ref<World2D> world_2d;
 
@@ -448,8 +451,10 @@ private:
 	void _perform_drop(Control *p_control = nullptr);
 	void _gui_cleanup_internal_state(Ref<InputEvent> p_event);
 
-	void _push_shortcut_input_internal(const Ref<InputEvent> &p_event);
-	void _push_unhandled_input_internal(const Ref<InputEvent> &p_event);
+	void _terminal_focus_viewport_exited();
+	void _push_input(const Ref<InputEvent> &p_event, bool p_local_coords, bool p_allow_parent_shortcuts);
+	void _push_shortcut_input_internal(const Ref<InputEvent> &p_event, bool p_allow_parent_shortcuts = true);
+	void _push_unhandled_input_internal(const Ref<InputEvent> &p_event, bool p_allow_parent_shortcuts = true);
 
 	Ref<InputEvent> _make_input_local(const Ref<InputEvent> &ev);
 
@@ -632,6 +637,9 @@ public:
 
 	void _push_text_input(const String &p_text, bool p_emit_text_changed_signal = false);
 	void push_text_input(const String &p_text);
+	Error set_terminal_focus_viewport(SubViewport *p_target, const Callable &p_release_callback = Callable());
+	void clear_terminal_focus_viewport();
+	SubViewport *get_terminal_focus_viewport() const;
 	void push_input(RequiredParam<InputEvent> p_event, bool p_local_coords = false);
 #ifndef DISABLE_DEPRECATED
 	void push_unhandled_input(RequiredParam<InputEvent> p_event, bool p_local_coords = false);

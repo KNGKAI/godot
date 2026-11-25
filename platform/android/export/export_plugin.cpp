@@ -3498,6 +3498,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	}
 
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	RETURN_IF_ERROR(notifier.error);
 
 	const String base_dir = p_path.get_base_dir();
 	if (!DirAccess::exists(base_dir)) {

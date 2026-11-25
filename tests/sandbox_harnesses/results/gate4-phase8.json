@@ -1,0 +1,596 @@
+{
+  "driver": "1.4.312",
+  "engine": "4.8-beta (custom_build)",
+  "failures": [],
+  "font_size": 36,
+  "gpu": "NVIDIA GeForce GTX 1050 Ti",
+  "input": {
+    "actor_locks": [
+      true,
+      false
+    ],
+    "command_arguments": [
+      "north gate"
+    ],
+    "motion_pixel": [
+      479.840026855469,
+      183.654037475586
+    ],
+    "namespace_denial": 4,
+    "wheel_deliveries": 1
+  },
+  "renderer": "forward_plus",
+  "renderer_trace": {
+    "four_3d_controls": [
+      {
+        "frame": 46,
+        "occlusion": 5,
+        "scenes": 5,
+        "viewports": 5
+      },
+      {
+        "frame": 47,
+        "occlusion": 5,
+        "scenes": 5,
+        "viewports": 5
+      },
+      {
+        "frame": 48,
+        "occlusion": 5,
+        "scenes": 5,
+        "viewports": 5
+      },
+      {
+        "frame": 49,
+        "occlusion": 5,
+        "scenes": 5,
+        "viewports": 5
+      },
+      {
+        "frame": 50,
+        "occlusion": 5,
+        "scenes": 5,
+        "viewports": 5
+      },
+      {
+        "frame": 51,
+        "occlusion": 5,
+        "scenes": 5,
+        "viewports": 5
+      },
+      {
+        "frame": 52,
+        "occlusion": 5,
+        "scenes": 5,
+        "viewports": 5
+      },
+      {
+        "frame": 53,
+        "occlusion": 5,
+        "scenes": 5,
+        "viewports": 5
+      }
+    ],
+    "four_disabled_with_cameras": [
+      {
+        "frame": 69,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 70,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 71,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 72,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 73,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 74,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 75,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 76,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      }
+    ],
+    "room": [
+      {
+        "frame": 23,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 24,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 25,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 26,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 27,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 28,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 29,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      },
+      {
+        "frame": 30,
+        "occlusion": 1,
+        "scenes": 1,
+        "viewports": 5
+      }
+    ]
+  },
+  "screen_size_m": [
+    2.40000009536743,
+    1.35000002384186
+  ],
+  "terminal_pixels": [
+    768,
+    432
+  ],
+  "throttling": {
+    "behind_camera": {
+      "draws_in_four_frames": 0,
+      "mode": 0
+    },
+    "distant": {
+      "draws_in_four_frames": 0,
+      "mode": 0
+    },
+    "nearby": {
+      "draws_in_four_frames": 4,
+      "mode": 2
+    }
+  },
+  "vertical_fov": 50.0,
+  "window": [
+    1600,
+    900
+  ],
+  "engine_sha256": "0a0c54b0710e020df10ca05ea948c36dead3240f029c39c0a00bb07b6b6533fa",
+  "ocr": {
+    "language": "en-US",
+    "blank": "",
+    "matches": 64,
+    "count": 64,
+    "readings": [
+      {
+        "file": "Console0-1m-0deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-1m-45deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-2m-0deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-2m-45deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-3m-0deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-3m-45deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-4m-0deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-4m-45deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-5m-0deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-5m-45deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-6m-0deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-6m-45deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-7m-0deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-7m-45deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-8m-0deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console0-8m-45deg.png",
+        "expected": "PUMP 642",
+        "recognized": "PUMP 642",
+        "matched": true
+      },
+      {
+        "file": "Console1-1m-0deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-1m-45deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-2m-0deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-2m-45deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-3m-0deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-3m-45deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-4m-0deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-4m-45deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-5m-0deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-5m-45deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-6m-0deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-6m-45deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-7m-0deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-7m-45deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-8m-0deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console1-8m-45deg.png",
+        "expected": "LINK 835",
+        "recognized": "LINK 835",
+        "matched": true
+      },
+      {
+        "file": "Console2-1m-0deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-1m-45deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-2m-0deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-2m-45deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-3m-0deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-3m-45deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-4m-0deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-4m-45deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-5m-0deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-5m-45deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-6m-0deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-6m-45deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-7m-0deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-7m-45deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-8m-0deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console2-8m-45deg.png",
+        "expected": "CORE 713",
+        "recognized": "CORE 713",
+        "matched": true
+      },
+      {
+        "file": "Console3-1m-0deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-1m-45deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-2m-0deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-2m-45deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-3m-0deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-3m-45deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-4m-0deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-4m-45deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-5m-0deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-5m-45deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-6m-0deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-6m-45deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-7m-0deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-7m-45deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-8m-0deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      },
+      {
+        "file": "Console3-8m-45deg.png",
+        "expected": "PORT 259",
+        "recognized": "PORT 259",
+        "matched": true
+      }
+    ]
+  },
+  "passed": true
+}

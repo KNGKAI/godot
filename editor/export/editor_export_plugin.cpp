@@ -340,7 +340,8 @@ Dictionary EditorExportPlugin::_get_export_options_overrides(const Ref<EditorExp
 void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) {
 }
 
-void EditorExportPlugin::_export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlugin::_export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
+	return OK;
 }
 
 void EditorExportPlugin::_export_end() {}

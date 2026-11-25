@@ -1,0 +1,8 @@
+[gd_resource type="SimModule" script_class="PowerGridSim" format=3]
+
+[ext_resource type="Script" path="res://scripts/power_grid_sim.gd" id="1_ofoi2"]
+
+[resource]
+module_id = &"power_grid_sim"
+tick_rate_hz = 10.0
+script = ExtResource("1_ofoi2")

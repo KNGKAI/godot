@@ -1,0 +1,94 @@
+[gd_resource type="WorldPartitionManifest" format=3]
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_v4cn0"]
+cell_id = &"macro_-1_0"
+layer = &"macro"
+grid_coords = Vector2i(-1, 0)
+hlod_impostor_path = "res://baked_cells/macro_1/macro_-1_0_proxy.res"
+high_scene_path = "res://baked_cells/macro_1/macro_-1_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_ypai0"]
+cell_id = &"macro_0_0"
+layer = &"macro"
+hlod_impostor_path = "res://baked_cells/macro_1/macro_0_0_proxy.res"
+high_scene_path = "res://baked_cells/macro_1/macro_0_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_tyrbu"]
+cell_id = &"macro_1_0"
+layer = &"macro"
+grid_coords = Vector2i(1, 0)
+hlod_impostor_path = "res://baked_cells/macro_1/macro_1_0_proxy.res"
+high_scene_path = "res://baked_cells/macro_1/macro_1_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_4mmdh"]
+cell_id = &"macro_2_0"
+layer = &"macro"
+grid_coords = Vector2i(2, 0)
+hlod_impostor_path = "res://baked_cells/macro_1/macro_2_0_proxy.res"
+high_scene_path = "res://baked_cells/macro_1/macro_2_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_1fqs6"]
+cell_id = &"macro_3_0"
+layer = &"macro"
+grid_coords = Vector2i(3, 0)
+hlod_impostor_path = "res://baked_cells/macro_1/macro_3_0_proxy.res"
+high_scene_path = "res://baked_cells/macro_1/macro_3_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_v1sxu"]
+cell_id = &"macro_4_0"
+layer = &"macro"
+grid_coords = Vector2i(4, 0)
+hlod_impostor_path = "res://baked_cells/macro_1/macro_4_0_proxy.res"
+high_scene_path = "res://baked_cells/macro_1/macro_4_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_uue04"]
+cell_id = &"macro_5_0"
+layer = &"macro"
+grid_coords = Vector2i(5, 0)
+hlod_impostor_path = "res://baked_cells/macro_1/macro_5_0_proxy.res"
+high_scene_path = "res://baked_cells/macro_1/macro_5_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_mvimw"]
+cell_id = &"macro_6_0"
+layer = &"macro"
+grid_coords = Vector2i(6, 0)
+hlod_impostor_path = "res://baked_cells/macro_1/macro_6_0_proxy.res"
+high_scene_path = "res://baked_cells/macro_1/macro_6_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_d7otg"]
+cell_id = &"macro_7_0"
+layer = &"macro"
+grid_coords = Vector2i(7, 0)
+hlod_impostor_path = "res://baked_cells/macro_1/macro_7_0_proxy.res"
+high_scene_path = "res://baked_cells/macro_1/macro_7_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_7bqyy"]
+cell_id = &"macro_8_0"
+layer = &"macro"
+grid_coords = Vector2i(8, 0)
+hlod_impostor_path = "res://baked_cells/macro_1/macro_8_0_proxy.res"
+high_scene_path = "res://baked_cells/macro_1/macro_8_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_rpl67"]
+cell_id = &"macro_9_0"
+layer = &"macro"
+grid_coords = Vector2i(9, 0)
+hlod_impostor_path = "res://baked_cells/macro_1/macro_9_0_proxy.res"
+high_scene_path = "res://baked_cells/macro_1/macro_9_0.scn"
+
+[sub_resource type="WorldPartitionCell" id="WorldPartitionCell_qjfdv"]
+cell_id = &"macro_10_0"
+layer = &"macro"
+grid_coords = Vector2i(10, 0)
+hlod_impostor_path = "res://baked_cells/macro_1/macro_10_0_proxy.res"
+high_scene_path = "res://baked_cells/macro_1/macro_10_0.scn"
+
+[sub_resource type="WorldPartitionLayer" id="WorldPartitionLayer_xw2jf"]
+layer_id = &"macro"
+cell_size = 512.0
+load_radius = 1024.0
+evict_radius = 1536.0
+
+[resource]
+layers = Array[WorldPartitionLayer]([SubResource("WorldPartitionLayer_xw2jf")])
+cells = Array[WorldPartitionCell]([SubResource("WorldPartitionCell_v4cn0"), SubResource("WorldPartitionCell_ypai0"), SubResource("WorldPartitionCell_tyrbu"), SubResource("WorldPartitionCell_4mmdh"), SubResource("WorldPartitionCell_1fqs6"), SubResource("WorldPartitionCell_v1sxu"), SubResource("WorldPartitionCell_uue04"), SubResource("WorldPartitionCell_mvimw"), SubResource("WorldPartitionCell_d7otg"), SubResource("WorldPartitionCell_7bqyy"), SubResource("WorldPartitionCell_rpl67"), SubResource("WorldPartitionCell_qjfdv")])

@@ -1,0 +1,9 @@
+[gd_resource type="SimModule" script_class="MiningFleetSim" format=3]
+
+[ext_resource type="Script" path="res://scripts/mining_fleet_sim.gd" id="1_u8g7m"]
+
+[resource]
+module_id = &"mining_fleet_sim"
+tick_rate_hz = 5.0
+priority = 1
+script = ExtResource("1_u8g7m")

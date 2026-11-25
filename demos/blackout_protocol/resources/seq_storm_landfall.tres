@@ -1,0 +1,19 @@
+[gd_resource type="SequenceData" format=3]
+
+[sub_resource type="ActionSetState" id="ActionSetState_x1yd6"]
+step_uuid = &"step_code_red"
+key = &"mission.emergency_phase"
+value = "storm_landfall_active"
+
+[resource]
+sequence_id = &"seq_storm_landfall"
+entry_step_uuid = &"step_code_red"
+steps = Array[SequenceAction]([SubResource("ActionSetState_x1yd6")])
+_editor_graph_meta = {
+"entry": {
+"position": Vector2(40, 120)
+},
+"node_737465705f636f64655f726564": {
+"position": Vector2(340, 100)
+}
+}

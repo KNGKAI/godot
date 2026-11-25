@@ -672,6 +672,7 @@ void Viewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			clear_terminal_focus_viewport();
 			_gui_cancel_tooltip();
 
 			RenderingServer::get_singleton()->viewport_set_scenario(viewport, RID());
@@ -2888,6 +2889,12 @@ void Viewport::_post_gui_grab_click_focus() {
 
 void Viewport::_push_text_input(const String &p_text, bool p_emit_signal) {
 	ERR_MAIN_THREAD_GUARD;
+	if (terminal_focus_viewport_id.is_valid()) {
+		if (SubViewport *target = get_terminal_focus_viewport()) {
+			target->_push_text_input(p_text, p_emit_signal);
+			return;
+		}
+	}
 	if (gui.subwindow_focused) {
 		gui.subwindow_focused->push_text_input(p_text);
 		return;
@@ -3517,10 +3524,73 @@ void Viewport::_drop_mouse_over(Control *p_until_control) {
 	gui.sending_mouse_enter_exit_notifications = false;
 }
 
+Error Viewport::set_terminal_focus_viewport(SubViewport *p_target, const Callable &p_release_callback) {
+	ERR_MAIN_THREAD_GUARD_V(ERR_UNAVAILABLE);
+	auto is_valid_target = [this](SubViewport *p_viewport) {
+		return is_inside_tree() && p_viewport && p_viewport->is_inside_tree() && p_viewport->get_tree() == get_tree() && !p_viewport->is_queued_for_deletion() && is_ancestor_of(p_viewport);
+	};
+	if (!is_valid_target(p_target)) {
+		return ERR_INVALID_PARAMETER;
+	}
+	const ObjectID target_id = p_target->get_instance_id();
+	if (terminal_focus_viewport_id == target_id) {
+		terminal_focus_release_callback = p_release_callback;
+		return OK;
+	}
+	if (terminal_focus_viewport_id.is_valid()) {
+		const ObjectID owner_id = get_instance_id();
+		clear_terminal_focus_viewport();
+		// The release callback can take focus itself or remove either viewport.
+		if (!ObjectDB::get_instance(owner_id) || terminal_focus_viewport_id.is_valid()) {
+			return ERR_BUSY;
+		}
+		p_target = ObjectDB::get_instance<SubViewport>(target_id);
+		if (!is_valid_target(p_target)) {
+			return ERR_INVALID_PARAMETER;
+		}
+	}
+	p_target->connect(SceneStringName(tree_exited), callable_mp(this, &Viewport::_terminal_focus_viewport_exited));
+	terminal_focus_viewport_id = target_id;
+	terminal_focus_release_callback = p_release_callback;
+	return OK;
+}
+
+SubViewport *Viewport::get_terminal_focus_viewport() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
+	return ObjectDB::get_instance<SubViewport>(terminal_focus_viewport_id);
+}
+
+void Viewport::_terminal_focus_viewport_exited() {
+	SubViewport *target = get_terminal_focus_viewport();
+	if (!target || !target->is_inside_tree()) {
+		clear_terminal_focus_viewport();
+	}
+}
+
+void Viewport::clear_terminal_focus_viewport() {
+	ERR_MAIN_THREAD_GUARD;
+	if (terminal_focus_viewport_id.is_null()) {
+		return;
+	}
+	if (SubViewport *target = get_terminal_focus_viewport()) {
+		target->disconnect(SceneStringName(tree_exited), callable_mp(this, &Viewport::_terminal_focus_viewport_exited));
+	}
+	const Callable release = terminal_focus_release_callback;
+	terminal_focus_viewport_id = ObjectID();
+	terminal_focus_release_callback = Callable();
+	if (release.is_valid()) {
+		release.call();
+	}
+}
+
 void Viewport::push_input(RequiredParam<InputEvent> p_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
 	EXTRACT_PARAM_OR_FAIL(event, p_event);
+	_push_input(event, p_local_coords, true);
+}
+
+void Viewport::_push_input(const Ref<InputEvent> &p_event, bool p_local_coords, bool p_allow_parent_shortcuts) {
+	ERR_FAIL_COND(!is_inside_tree());
 
 	if (disable_input || disable_input_override) {
 		return;
@@ -3542,11 +3612,39 @@ void Viewport::push_input(RequiredParam<InputEvent> p_event, bool p_local_coords
 		vp->local_input_handled = false;
 	}
 
+	if (terminal_focus_viewport_id.is_valid()) {
+		if (SubViewport *target = get_terminal_focus_viewport()) {
+			if (p_event->is_action_pressed(SNAME("ui_cancel"))) {
+				set_input_as_handled();
+				clear_terminal_focus_viewport();
+				return;
+			}
+			const Ref<InputEventMouseButton> button = p_event;
+			const bool wheel = button.is_valid() && button->get_button_index() >= MouseButton::WHEEL_UP && button->get_button_index() <= MouseButton::WHEEL_RIGHT;
+			if (wheel || Ref<InputEventKey>(p_event).is_valid() || Ref<InputEventShortcut>(p_event).is_valid()) {
+				Ref<InputEvent> forwarded = p_event;
+				if (wheel) {
+					// The last raycast supplied a point in the terminal's coordinate space.
+					Ref<InputEventMouseButton> local_button = button->xformed_by(Transform2D());
+					local_button->set_position(target->gui.last_mouse_pos);
+					local_button->set_global_position(target->gui.last_mouse_pos);
+					forwarded = local_button;
+				}
+				const ObjectID owner_id = get_instance_id();
+				target->_push_input(forwarded, true, false);
+				if (ObjectDB::get_instance(owner_id) && is_inside_tree()) {
+					set_input_as_handled();
+				}
+				return;
+			}
+		}
+	}
+
 	Ref<InputEvent> ev;
 	if (!p_local_coords) {
-		ev = _make_input_local(event);
+		ev = _make_input_local(p_event);
 	} else {
-		ev = event;
+		ev = p_event;
 	}
 
 	Ref<InputEventMouse> me = ev;
@@ -3577,7 +3675,7 @@ void Viewport::push_input(RequiredParam<InputEvent> p_event, bool p_local_coords
 	}
 
 	if (!is_input_handled()) {
-		_push_unhandled_input_internal(ev);
+		_push_unhandled_input_internal(ev, p_allow_parent_shortcuts);
 	}
 
 	event_count++;
@@ -3611,7 +3709,7 @@ void Viewport::push_unhandled_input(RequiredParam<InputEvent> p_event, bool p_lo
 }
 #endif // DISABLE_DEPRECATED
 
-void Viewport::_push_shortcut_input_internal(const Ref<InputEvent> &p_event) {
+void Viewport::_push_shortcut_input_internal(const Ref<InputEvent> &p_event, bool p_allow_parent_shortcuts) {
 	if (Object::cast_to<InputEventKey>(*p_event) == nullptr && Object::cast_to<InputEventShortcut>(*p_event) == nullptr && Object::cast_to<InputEventJoypadButton>(*p_event) == nullptr) {
 		return;
 	}
@@ -3619,7 +3717,7 @@ void Viewport::_push_shortcut_input_internal(const Ref<InputEvent> &p_event) {
 	get_tree()->_call_input_pause(shortcut_input_group, SceneTree::CALL_INPUT_TYPE_SHORTCUT_INPUT, p_event, this);
 
 	// Only InputEventKey needs to be propagated, since it's a per-window event.
-	if (!propagate_shortcuts_to_parent || Object::cast_to<InputEventKey>(*p_event) == nullptr || is_input_handled()) {
+	if (!p_allow_parent_shortcuts || !propagate_shortcuts_to_parent || Object::cast_to<InputEventKey>(*p_event) == nullptr || is_input_handled()) {
 		return;
 	}
 
@@ -3649,9 +3747,9 @@ void Viewport::_push_shortcut_input_internal(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event) {
+void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event, bool p_allow_parent_shortcuts) {
 	// Shortcut Input.
-	_push_shortcut_input_internal(p_event);
+	_push_shortcut_input_internal(p_event, p_allow_parent_shortcuts);
 
 	// Unhandled key Input - Used for performance reasons - This is called a lot less than _unhandled_input since it ignores MouseMotion, and to handle Unicode input with Alt / Ctrl modifiers after handling shortcuts.
 	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*p_event) != nullptr)) {
@@ -5261,6 +5359,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
 	ClassDB::bind_method(D_METHOD("push_text_input", "text"), &Viewport::push_text_input);
 	ClassDB::bind_method(D_METHOD("push_input", "event", "in_local_coords"), &Viewport::push_input, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_terminal_focus_viewport", "target", "release_callback"), &Viewport::set_terminal_focus_viewport, DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("clear_terminal_focus_viewport"), &Viewport::clear_terminal_focus_viewport);
+	ClassDB::bind_method(D_METHOD("get_terminal_focus_viewport"), &Viewport::get_terminal_focus_viewport);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("push_unhandled_input", "event", "in_local_coords"), &Viewport::push_unhandled_input, DEFVAL(false));
 #endif // DISABLE_DEPRECATED

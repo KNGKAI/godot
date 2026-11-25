@@ -1,0 +1,253 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/sector7_manager.gd" id="1_rnvgc"]
+[ext_resource type="SimModule" path="res://resources/power_grid_sim.tres" id="2_s60ou"]
+[ext_resource type="SimModule" path="res://resources/traffic_crowd_sim.tres" id="3_642xk"]
+[ext_resource type="MissionData" path="res://resources/mission_sector7_blackout.tres" id="4_bxikr"]
+[ext_resource type="WorldPartitionManifest" path="res://baked_cells/meso_1/manifest.tres" id="5_k6r1u"]
+[ext_resource type="PackedScene" path="res://scenes/cyber_cruiser.tscn" id="6_o1717"]
+[ext_resource type="PackedScene" path="res://scenes/street_drone.tscn" id="7_mumq2"]
+[ext_resource type="BoxMesh" path="res://resources/cruiser_proxy_mesh.tres" id="8_emoyi"]
+[ext_resource type="CylinderMesh" path="res://resources/drone_proxy_mesh.tres" id="9_al70k"]
+[ext_resource type="Script" path="res://scripts/fixer_player_controller.gd" id="10_80fan"]
+
+[sub_resource type="Environment" id="Environment_w3dmi"]
+background_mode = 1
+background_color = Color(0.02, 0.03, 0.055, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.14, 0.18, 0.28, 1)
+ambient_light_energy = 0.8
+glow_enabled = true
+glow_intensity = 0.65
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_o4ti5"]
+size = Vector3(240, 1, 840)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_40l84"]
+albedo_color = Color(0.07, 0.08, 0.1, 1)
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_6ut6x"]
+material = SubResource("StandardMaterial3D_40l84")
+size = Vector3(24, 0.1, 800)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2l57r"]
+albedo_color = Color(0.16, 0.2, 0.26, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_2uprh"]
+material = SubResource("StandardMaterial3D_2l57r")
+size = Vector3(6.5, 5.5, 6.5)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_lfoq0"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="Animation" id="Animation_f2igj"]
+length = 2.5
+tracks/0/type = "world_state"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("WorldState:power.streetlights_dimmer")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.5),
+"transitions": PackedFloat32Array(1, 1),
+"values": [0.4, 1.35]
+}
+tracks/1/type = "event_bus"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("EventBus:traffic.corridor_cleared")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.5),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"event_id": &"traffic.corridor_cleared",
+"payload": {
+"cutscene": true
+}
+}]
+}
+tracks/2/type = "actor_command"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ActorRegistry:fixer_player")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.1, 2.2),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"action_id": &"camera.focus_substation",
+"actor_id": &"fixer_player",
+"payload": {
+"fov": 54.0,
+"marker_id": &"MarkerSubstation"
+}
+}, {
+"action_id": &"camera.reset_fov",
+"actor_id": &"fixer_player",
+"payload": {
+"fov": 75.0
+}
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_pmpvg"]
+_data = {
+&"grid_restored_cutscene": SubResource("Animation_f2igj")
+}
+
+[node name="Sector7District" type="Node3D" unique_id=1716660694]
+script = ExtResource("1_rnvgc")
+power_module = ExtResource("2_s60ou")
+traffic_module = ExtResource("3_642xk")
+blackout_mission = ExtResource("4_bxikr")
+partition_manifest = ExtResource("5_k6r1u")
+cruiser_prefab = ExtResource("6_o1717")
+drone_prefab = ExtResource("7_mumq2")
+cruiser_proxy_mesh = ExtResource("8_emoyi")
+drone_proxy_mesh = ExtResource("9_al70k")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=368885661]
+environment = SubResource("Environment_w3dmi")
+
+[node name="MoonLight" type="DirectionalLight3D" parent="." unique_id=1588497918]
+transform = Transform3D(0.81915206, 0.38379756, -0.42625037, 0, 0.7431448, 0.6691306, 0.57357645, -0.5481197, 0.6087486, 0, 0, 0)
+light_color = Color(0.55, 0.68, 0.95, 1)
+light_energy = 0.65
+shadow_enabled = true
+
+[node name="BoulevardGround" type="StaticBody3D" parent="." unique_id=826025113]
+
+[node name="GroundCollider" type="CollisionShape3D" parent="BoulevardGround" unique_id=1540420125]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BoxShape3D_o4ti5")
+
+[node name="AsphaltMesh" type="MeshInstance3D" parent="BoulevardGround" unique_id=165185017]
+mesh = SubResource("BoxMesh_6ut6x")
+
+[node name="SubstationCore" type="Node3D" parent="." unique_id=1180476131]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -28)
+
+[node name="SandboxActor" type="SandboxActor" parent="SubstationCore" unique_id=996993133]
+actor_id = &"substation_core"
+tags = Array[StringName]([&"infrastructure"])
+
+[node name="TransformerMesh" type="MeshInstance3D" parent="SubstationCore" unique_id=984450232]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.75, 0)
+mesh = SubResource("BoxMesh_2uprh")
+
+[node name="SubstationBeacon" type="OmniLight3D" parent="SubstationCore" unique_id=1750338512]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.8, 0)
+light_color = Color(1, 0.22, 0.15, 1)
+light_energy = 4.0
+omni_range = 28.0
+
+[node name="StreetLight_0" type="OmniLight3D" parent="." unique_id=746199177]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 6, -50)
+light_color = Color(0.25, 0.85, 1, 1)
+omni_range = 24.0
+
+[node name="StreetLight_1" type="OmniLight3D" parent="." unique_id=691362886]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 6, -30)
+light_color = Color(0.25, 0.85, 1, 1)
+omni_range = 24.0
+
+[node name="StreetLight_2" type="OmniLight3D" parent="." unique_id=860776164]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 6, -10)
+light_color = Color(0.25, 0.85, 1, 1)
+omni_range = 24.0
+
+[node name="StreetLight_3" type="OmniLight3D" parent="." unique_id=259815872]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 6, 10)
+light_color = Color(0.25, 0.85, 1, 1)
+omni_range = 24.0
+
+[node name="StreetLight_4" type="OmniLight3D" parent="." unique_id=801796970]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 6, 30)
+light_color = Color(0.25, 0.85, 1, 1)
+omni_range = 24.0
+
+[node name="StreetLight_5" type="OmniLight3D" parent="." unique_id=885869626]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 6, 50)
+light_color = Color(0.25, 0.85, 1, 1)
+omni_range = 24.0
+
+[node name="MarkerKiosk" type="Marker3D" parent="." unique_id=612060520]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1, 8)
+
+[node name="MarkerSubstation" type="Marker3D" parent="." unique_id=951526428]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -18)
+
+[node name="MarkerValve" type="Marker3D" parent="." unique_id=666513852]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 1, -10)
+
+[node name="FixerPlayer" type="CharacterBody3D" parent="." unique_id=5433683]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1.1, 11.5)
+script = ExtResource("10_80fan")
+
+[node name="Collider" type="CollisionShape3D" parent="FixerPlayer" unique_id=1973843327]
+shape = SubResource("CapsuleShape3D_lfoq0")
+
+[node name="Camera3D" type="Camera3D" parent="FixerPlayer" unique_id=253105727]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 0)
+current = true
+
+[node name="SandboxActor" type="SandboxActor" parent="FixerPlayer" unique_id=1445113966]
+actor_id = &"fixer_player"
+tags = Array[StringName]([&"player"])
+
+[node name="StreamingInvoker" type="StreamingInvoker" parent="FixerPlayer" unique_id=1629174285]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="FixerPlayer" unique_id=211585435]
+libraries/ = SubResource("AnimationLibrary_pmpvg")
+
+[node name="StreetKioskTerminal" type="TerminalDisplay3D" parent="." unique_id=911099507]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1.65, 6.2)
+title = "SECTOR 7 STREET KIOSK [USER: power.*, traffic.*]"
+screen_size = Vector2(2.1, 1.25)
+actor_path = NodePath("../FixerPlayer/SandboxActor")
+allowed_namespaces = Array[StringName]([&"power", &"traffic", &"state", &"mission", &"help"])
+
+[node name="SubstationAdminTerminal" type="TerminalDisplay3D" parent="." unique_id=610592447]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, -21)
+title = "SUBSTATION CORE CONSOLE [ADMIN: ALL NAMESPACES]"
+screen_size = Vector2(2.4, 1.4)
+actor_path = NodePath("../FixerPlayer/SandboxActor")
+permission_tier = 2
+
+[node name="CoolantValveTerminal" type="TerminalDisplay3D" parent="." unique_id=10239279]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 1.65, -12.5)
+title = "AUX CRYO-COOLANT VALVE [USER: power.coolant]"
+screen_size = Vector2(2, 1.2)
+actor_path = NodePath("../FixerPlayer/SandboxActor")
+allowed_namespaces = Array[StringName]([&"power", &"help"])
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=2105899097]
+
+[node name="Panel" type="PanelContainer" parent="HUD" unique_id=1052701248]
+custom_minimum_size = Vector2(780, 118)
+offset_left = 18.0
+offset_top = 18.0
+offset_right = 18.0
+offset_bottom = 18.0
+
+[node name="Margin" type="MarginContainer" parent="HUD/Panel" unique_id=1978044644]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="TelemetryLabel" type="RichTextLabel" parent="HUD/Panel/Margin" unique_id=924842949]
+layout_mode = 2
+bbcode_enabled = true
+text = "Initializing Gridlock: Sector 7..."
+fit_content = true
+scroll_active = false
